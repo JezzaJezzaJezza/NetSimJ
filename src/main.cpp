@@ -1,6 +1,6 @@
 #include <print>
 
 int main() {
-  println("Test");  
+  std::println("Test");  
   return 1;
 }

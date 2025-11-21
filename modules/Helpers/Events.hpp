@@ -1,7 +1,5 @@
-export module Events;
-
-export namespace event {
-  class Events {
+namespace helper {
+  class BasicEvents {
     public:
       unsigned long src;
       unsigned long dest;

@@ -1,11 +1,11 @@
-#include <deque>
+#include <queue>
 import Events;
 
 namespace engines {
 
   class BasicEngine {
     
-    std::deque<Event> eventQueue;
+    std::priority_queue<Event> eventQueue;
 
     public:
 
