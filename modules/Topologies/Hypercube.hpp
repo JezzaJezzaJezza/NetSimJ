@@ -1,7 +1,5 @@
 #include <cstddef>
-#include <vector>
 #include <stdexcept>
-#include "Helpers/BitOps.hpp"
 #include "Base.hpp"
 
 namespace topo {
@@ -27,19 +25,19 @@ namespace topo {
         return std::size_t{1} << n;
       }
       
-      auto get_neighbours_impl(BitMask& x) const {
-        std::vector<BitMask> neighbours;
-        neighbours.reserve(n);
+      // auto get_neighbours_impl(BitMask& x) const {
+      //   std::vector<BitMask> neighbours;
+      //   neighbours.reserve(n);
 
-        // Flip one way and back to avoid fn copy
-        for(std::size_t i = 0; i < sizeof(BitMask) * 8; i++) {
-          helper::flip_bit(x, i);
-          neighbours.push_back(x);
-          helper::flip_bit(x, i);
-        }
+      //   // Flip one way and back to avoid fn copy
+      //   for(std::size_t i = 0; i < sizeof(BitMask) * 8; i++) {
+      //     helper::flip_bit(x, i);
+      //     neighbours.push_back(x);
+      //     helper::flip_bit(x, i);
+      //   }
 
-        return neighbours;
-      }
+      //   return neighbours;
+      // }
 
       template <typename F>
       void for_each_node_impl(F&& f) const {

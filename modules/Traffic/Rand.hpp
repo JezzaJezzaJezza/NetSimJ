@@ -4,7 +4,6 @@
 #include <vector>
 
 #include "Helpers/Events.hpp"
-#include "Topologies/Hypercube.hpp"
 
 namespace traffic {
 

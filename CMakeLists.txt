@@ -17,6 +17,8 @@ add_executable(NetSim src/main.cpp)
 target_link_libraries(NetSim 
   PRIVATE 
     topologies
+    engines
+    traffic
 )
 
 

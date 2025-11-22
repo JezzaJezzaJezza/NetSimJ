@@ -1,3 +1,5 @@
+#pragma once
+
 #include <random>
 #include <utility>
 
@@ -29,7 +31,7 @@ namespace topo {
       }
 
       Node neighbour_at(const Node& x, std::size_t i) const {
-        return static_cast<const Derived*>(this)->neighbour_at_impl(x);
+        return static_cast<const Derived*>(this)->neighbour_at_impl(x, i);
       }
 
       template <typename Rand>
