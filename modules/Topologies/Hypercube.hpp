@@ -1,15 +1,19 @@
 #include <cstddef>
-#include "BitOps.hpp"
+#include "Helpers/BitOps.hpp"
+#include "Base.hpp"
 
 namespace topo {
-  class Hypercube {
-    const std::size_t n;
 
-    Hypercube(std::size_t size) : n(size) {}
+  class Hypercube : public BaseTopo<Hypercube, BitMask> {
+    private:
+      const std::size_t n;
     
     public:
+      explicit Hypercube(std::size_t dim) : n(dim) {}
+      
+      auto get_neighbours_impl(BitMask& x) const {
 
-      void getNeighbours() {}
+      }
   };
 }
 

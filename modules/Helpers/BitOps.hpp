@@ -13,4 +13,9 @@ namespace helper {
     if (val) x |= mask;
     else x &= ~mask;
   }
+
+  inline void flip_bit(BitMask &x, std::size_t i) {
+    auto mask = BitMask{1} << i;
+    x ^= mask;
+  }
 }

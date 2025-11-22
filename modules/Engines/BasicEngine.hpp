@@ -1,11 +1,11 @@
 #include <queue>
-import Events;
+#include "Topologies/Hypercube.hpp"
 
 namespace engines {
 
   class BasicEngine {
     
-    std::priority_queue<Event> eventQueue;
+    std::priority_queue<int> eventQueue;
 
     public:
 

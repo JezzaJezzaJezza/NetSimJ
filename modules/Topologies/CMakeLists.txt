@@ -2,7 +2,7 @@ add_library(topologies INTERFACE)
 
 target_include_directories(topologies
   INTERFACE
-    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${PROJECT_SOURCE_DIR}/modules
 )
 
 target_link_libraries(topologies
