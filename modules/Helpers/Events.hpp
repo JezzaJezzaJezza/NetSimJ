@@ -1,7 +1,11 @@
+#pragma once
+
 namespace helper {
+
+  template <typename Node>
   class BasicEvents {
     public:
-      unsigned long src;
-      unsigned long dest;
+      Node src;
+      Node dest;
   };
 }
