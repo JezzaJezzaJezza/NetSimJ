@@ -19,15 +19,25 @@ namespace traffic {
 
     std::random_device rd;
     std::mt19937 rng{rd()};
+
+    std::vector<Node> nodes;
+    nodes.reserve(topo.node_count());
+    topo.for_each_node([&](const Node& x) {
+       nodes.push_back(x);
+     });
     
     std::vector<Flow<Topo>> flows;
-    flows.reserve(topo.node_count());
+    flows.reserve(nodes.size());
 
-    topo.for_each_node([&](const Node& src) {
-      Node dst = topo.random_neighbour(src, rng);
-      flows.push_back(Flow<Topo>{src, dst});
-    });
+    std::uniform_int_distribution<std::size_t> dist(0, nodes.size() - 1);
 
+    for(const Node& src : nodes) {
+      Node dest;
+
+      dest = nodes[dist(rng)];
+
+      flows.push_back(Flow<Topo>{src, dest});
+    }
     return flows;
   }
 

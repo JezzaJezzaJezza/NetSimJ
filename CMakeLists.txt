@@ -19,6 +19,7 @@ target_link_libraries(NetSim
     topologies
     engines
     traffic
+    routers
 )
 
 

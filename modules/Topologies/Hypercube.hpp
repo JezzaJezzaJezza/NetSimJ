@@ -24,20 +24,6 @@ namespace topo {
       std::size_t node_count_impl() const {
         return std::size_t{1} << n;
       }
-      
-      // auto get_neighbours_impl(BitMask& x) const {
-      //   std::vector<BitMask> neighbours;
-      //   neighbours.reserve(n);
-
-      //   // Flip one way and back to avoid fn copy
-      //   for(std::size_t i = 0; i < sizeof(BitMask) * 8; i++) {
-      //     helper::flip_bit(x, i);
-      //     neighbours.push_back(x);
-      //     helper::flip_bit(x, i);
-      //   }
-
-      //   return neighbours;
-      // }
 
       template <typename F>
       void for_each_node_impl(F&& f) const {
@@ -63,6 +49,24 @@ namespace topo {
       BitMask neighbour_at_impl(const BitMask& x, std::size_t i) const {
         BitMask mask = BitMask{1} << i;
         return x ^ mask;
+      }
+
+      std::size_t dim_count() const {
+        return n;
+      }
+      
+      bool dim_aligned(BitMask a, BitMask b, std::size_t dim) const {
+        BitMask mask = BitMask{1} << dim;
+        return ((a ^ b) & mask) == 0;
+      }
+
+      BitMask move_to(BitMask from, BitMask to, std::size_t dim) const {
+        BitMask mask = BitMask{1} << dim;
+
+        if(((from ^ to) & mask) != 0) {
+          return from ^ mask;
+        }
+        return from;
       }
   };
 }
