@@ -1,6 +1,6 @@
 #pragma once
 #include <cstdint>
-#include <print>
+#include <iostream>
 
 namespace helper {
 
@@ -12,8 +12,11 @@ namespace helper {
       std::uint64_t timestamp = 0;
 
       void print_node() {
-        std::println("Event(src = {}, dest = {}, ts = {})",
-                     src, dest, timestamp);        
+        std::cout << "Event(src = " << src
+                  << ", dest = " << dest
+                  << ", ts = " << timestamp << std::endl;
+      //   std::println("Event(src = {}, dest = {}, ts = {})",
+      //                src, dest, timestamp);        
       }
   };
 
