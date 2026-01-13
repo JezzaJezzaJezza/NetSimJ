@@ -8,3 +8,7 @@
 #include "Zcube.hpp"
 #include "Mobiuscube.hpp"
 #include "FoldedHypercube.hpp"
+#include "ReducedHypercube.hpp"
+#include "BalancedHypercube.hpp"
+#include "Twistedcube.hpp"
+
