@@ -4,9 +4,6 @@
 #include "Topologies/All.hpp"
 #include "Routers/All.hpp"
 #include "Engines/BasicEngine.hpp"
-#include "Topologies/BalancedHypercube.hpp"
-#include "Topologies/ReducedHypercube.hpp"
-#include "Topologies/Twistedcube.hpp"
 
 int main() {
   // using Topo = topo::Hypercube;
@@ -19,7 +16,8 @@ int main() {
   // using Topo = topo::FoldedHypercube;
   // using Topo = topo::ReducedHypercube; // NO DOR INTERFACE (CHANGE DOR ITSELF)
   // using Topo = topo::BalancedHypercube; // NEEDS CUSTOM PRINT INTERFACE
-  using Topo = topo::TwistedCube;
+  // using Topo = topo::TwistedCube;
+  using Topo = topo::CubeConnectedCycles;
   using Node = Topo::node_type;
   
   // Topo topo(4); // hypercube
@@ -32,7 +30,8 @@ int main() {
   // Topo topo(4); // Folded Hypercube
   // Topo topo(2, 4); // Reduced Hypercube
   // Topo topo(4); // Balanced Hypercube
-  Topo topo(5); // Twisted cube
+  // Topo topo(5); // Twisted cube
+  Topo topo(4); // CCC
   engines::BasicEngine<Topo> engine;
 
   auto flows = traffic::gen_rand_traffic(topo);

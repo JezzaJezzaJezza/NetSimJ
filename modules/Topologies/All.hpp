@@ -11,4 +11,5 @@
 #include "ReducedHypercube.hpp"
 #include "BalancedHypercube.hpp"
 #include "Twistedcube.hpp"
+#include "CubeConnectedCycles.hpp"
 
