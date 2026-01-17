@@ -12,4 +12,5 @@
 #include "BalancedHypercube.hpp"
 #include "Twistedcube.hpp"
 #include "CubeConnectedCycles.hpp"
+#include "Paritycube.hpp"
 
