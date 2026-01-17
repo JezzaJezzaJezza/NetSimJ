@@ -5,6 +5,8 @@
 #include <stdexcept>
 #include "Base.hpp"
 
+
+// The Twisted-Cube Connected Networks by WANG and ZHAO (recoined parity cube)
 namespace topo {
 
   using BitMask = std::uint64_t;
