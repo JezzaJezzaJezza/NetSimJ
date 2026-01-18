@@ -9,7 +9,7 @@ int main() {
   // using Topo = topo::Hypercube;
   // using Topo = topo::Dragonfly;
   // using Topo = topo::Augmentedcube;
-  // using Topo = topo::KaryNcube;
+  using Topo = topo::KaryNcube;
   // using Topo = topo::CrossedCube;
   // using Topo = topo::Zcube;
   // using Topo = topo::Mobiuscube;
@@ -17,13 +17,13 @@ int main() {
   // using Topo = topo::ReducedHypercube; // NO DOR INTERFACE (CHANGE DOR ITSELF)
   // using Topo = topo::BalancedHypercube; // NEEDS CUSTOM PRINT INTERFACE
   // using Topo = topo::TwistedCube;
-  using Topo = topo::CubeConnectedCycles;
+  // using Topo = topo::CubeConnectedCycles;
   using Node = Topo::node_type;
   
   // Topo topo(4); // hypercube
   // Topo topo(3, 1, 4); // Dragonfly
   // Topo topo(4); // Augmented cube
-  // Topo topo(4, 5); // K-ary N-cube
+  Topo topo(5, 7); // K-ary N-cube
   // Topo topo(4); // Crossed cube
   // Topo topo(4); // Zcube
   // Topo topo(4); // Mobius cube
@@ -31,7 +31,7 @@ int main() {
   // Topo topo(2, 4); // Reduced Hypercube
   // Topo topo(4); // Balanced Hypercube
   // Topo topo(5); // Twisted cube
-  Topo topo(4); // CCC
+  // Topo topo(4); // CCC
   engines::BasicEngine<Topo> engine;
 
   auto flows = traffic::gen_rand_traffic(topo);
