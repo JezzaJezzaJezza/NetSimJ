@@ -4,6 +4,20 @@
 #include <utility>
 
 namespace topo {
+
+  template <typename Derived, typename NodeType>
+  class BaseNode {
+      bool isHealthy;
+      NodeType* neighbourList;
+    public:
+
+      template <typename F>
+      void iter_neighbours(const NodeType& x, F&& f) const {
+        static_cast<const Derived*>(this)
+          ->iter_neighbours_impl(x, std::forward<F>(f));
+      }
+  };
+  
   template <typename Derived, typename Node>
   class BaseTopo {
     public:
