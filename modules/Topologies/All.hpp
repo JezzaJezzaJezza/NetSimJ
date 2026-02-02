@@ -14,3 +14,5 @@
 #include "CubeConnectedCycles.hpp"
 #include "Paritycube.hpp"
 
+#include "CSR.hpp"
+
