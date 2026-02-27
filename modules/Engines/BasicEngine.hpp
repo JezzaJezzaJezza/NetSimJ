@@ -1,51 +1,61 @@
 #include <queue>
+#include <vector>
 #include "Helpers/Events.hpp"
 
 namespace engines {
 
   template <typename Topo>
   class BasicEngine {
-    public:
-      using Node = typename Topo::node_type;
-      using Event = helper::BasicEvents<Node>;
-      using Queue = std::priority_queue<Event, std::vector<Event>, helper::EventCompare<Event>>;
+  public:
+    using Node  = typename Topo::node_type;
+    using Event = helper::BasicEvents<Node>;
+    using Queue = std::priority_queue<Event, std::vector<Event>, helper::EventCompare<Event>>;
 
-      void enqueue(const Event& ev) {
-        eventQueue.push(ev);
+    void enqueue(const Event& ev) {
+      eventQueue.push(ev);
+    }
+
+    const std::vector<Event>& finished_flows() const {
+      return finished_;
+    }
+
+    template <typename TrafficGen, typename Router>
+    void runSim(const Topo& topo, TrafficGen&& traffic_gen, Router&& router) {
+
+      auto flows = traffic_gen(topo);
+
+      for (auto& f : flows) {
+        f.path.clear();
+        f.path.push_back(f.src);
+        eventQueue.push(f);
       }
 
-      template <typename TrafficGen, typename Router>
-      void runSim(const Topo& topo, TrafficGen&& traffic_gen, Router&& router) {
+      while (!eventQueue.empty()) {
+        Event ev = eventQueue.top();
+        eventQueue.pop();
 
-        auto flows = traffic_gen(topo);
-        
-        for(auto& f : flows) {
-          eventQueue.push(f);
+        Node cur  = ev.src;
+        Node dest = ev.dest;
+
+        if (cur == dest) {
+          finished_.push_back(ev);
+          continue;
         }
-        
-        while(!eventQueue.empty()) {
-          // Run the sim
-          Event ev = eventQueue.top();
-          eventQueue.pop();
 
-          ev.print_node();
-          
-          Node cur = ev.src;
-          Node dest = ev.dest;
+        Node next = router(topo, cur, dest);
 
-          if(cur == dest) continue;
+        Event nextEv = ev;
+        nextEv.src = next;
+        nextEv.timestamp += 1;
+        nextEv.path.push_back(next);
 
-          Node next = router(topo, cur, dest);
-
-          Event nextEv = ev;
-          nextEv.src = next;
-          nextEv.timestamp += 1;
-
-          eventQueue.push(nextEv);
-        }
+        eventQueue.push(nextEv);
       }
-      
-      private:
-        Queue eventQueue;
+    }
+
+  private:
+    Queue eventQueue;
+    std::vector<Event> finished_;
   };
+
 }

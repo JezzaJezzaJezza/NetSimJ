@@ -1,4 +1,6 @@
 #include <iostream>
+#include <print>
+
 #include "Helpers/All.hpp"
 #include "Rand.hpp"
 #include "Topologies/All.hpp"
@@ -6,10 +8,10 @@
 #include "Engines/BasicEngine.hpp"
 
 int main() {
-  // using Topo = topo::Hypercube;
+  using BaseTopo = topo::Hypercube;
   // using Topo = topo::Dragonfly;
   // using Topo = topo::Augmentedcube;
-  using Topo = topo::KaryNcube;
+  // using Topo = topo::KaryNcube;
   // using Topo = topo::CrossedCube;
   // using Topo = topo::Zcube;
   // using Topo = topo::Mobiuscube;
@@ -18,12 +20,11 @@ int main() {
   // using Topo = topo::BalancedHypercube; // NEEDS CUSTOM PRINT INTERFACE
   // using Topo = topo::TwistedCube;
   // using Topo = topo::CubeConnectedCycles;
-  using Node = Topo::node_type;
   
-  // Topo topo(4); // hypercube
+  BaseTopo graph(4); // hypercube
   // Topo topo(3, 1, 4); // Dragonfly
   // Topo topo(4); // Augmented cube
-  Topo topo(5, 7); // K-ary N-cube
+  // Topo topo(5, 7); // K-ary N-cube
   // Topo topo(4); // Crossed cube
   // Topo topo(4); // Zcube
   // Topo topo(4); // Mobius cube
@@ -32,15 +33,32 @@ int main() {
   // Topo topo(4); // Balanced Hypercube
   // Topo topo(5); // Twisted cube
   // Topo topo(4); // CCC
-  engines::BasicEngine<Topo> engine;
 
-  auto flows = traffic::gen_rand_traffic(topo);
+  auto csr = topo::build_csr(graph);
+
+  using CSRTopo = topo::CSRView<BaseTopo>;
+  CSRTopo csr_topo(csr);
+  
+  engines::BasicEngine<CSRTopo> engine;
+
+  auto flows = traffic::gen_rand_traffic(graph);
   
   
-  engine.runSim(topo, traffic::gen_rand_traffic<Topo>, route::DOR_next_hop<Topo>);
+  engine.runSim(csr_topo, traffic::gen_rand_traffic<CSRTopo>, route::DOR_next_hop<CSRTopo>);
 
+  for(const auto& ev : engine.finished_flows()) {
+    std::print("Flow {} -> {} | path: ", ev.path.front(), ev.dest);
 
-  helper::check_basic_topology(topo);  
+    for (std::size_t i = 0; i < ev.path.size(); ++i) {
+      std::print("{}", ev.path[i]);
+      if (i + 1 < ev.path.size()) {
+        std::print(" -> ");
+      }
+    }
+    std::println("");
+  }
+
+  helper::check_basic_topology(graph);  
   std::cout << "Tests passed!" << std::endl;
   return 0;
 }

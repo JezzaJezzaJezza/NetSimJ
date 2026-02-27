@@ -6,7 +6,7 @@
 #include <cstdint>
 #include <stdexcept>
 
-namespace Topo {
+namespace topo {
   template <typename Node>
   struct NodeIndex {
     std::vector<Node> index_to_node;
@@ -59,14 +59,14 @@ namespace Topo {
     // index stuff
     NodeIndex<Node> index = build_node_index(topo);
     graph.nodes = index.size();
-    graph.index_to_node = index.index_to_node;
+    // graph.index_to_node = index.index_to_node;
 
     graph.row_offsets.resize(graph.nodes + 1);
 
     // compute row offsets
     std::size_t edge_count = 0;
     for(std::size_t node_idx = 0; node_idx < graph.nodes; node_idx++) {
-      const Node& u = graph.index_to_node[node_idx];
+      const Node& u = index.index_to_node[node_idx];
       std::size_t deg = topo.degree_impl(u);
       graph.row_offsets[node_idx] = static_cast<std::uint32_t> (edge_count);
       edge_count += deg;
@@ -83,7 +83,7 @@ namespace Topo {
 
     // second pass to actually fill adjacency
     for(std::size_t node_idx = 0; node_idx < graph.nodes; node_idx++) {
-      const Node& u = graph.index_to_node[node_idx];
+      const Node& u = index.index_to_node[node_idx];
       std::size_t deg = topo.degree_impl(u);
       std::uint32_t start = graph.row_offsets[node_idx];
 

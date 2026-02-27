@@ -15,4 +15,5 @@
 #include "Paritycube.hpp"
 
 #include "CSR.hpp"
+#include "CSRView.hpp"
 

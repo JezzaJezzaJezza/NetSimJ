@@ -1,6 +1,7 @@
 #pragma once
 #include <cstdint>
-#include <iostream>
+#include <print>
+#include <vector>
 
 namespace helper {
 
@@ -11,15 +12,13 @@ namespace helper {
       Node dest;
       std::uint64_t timestamp = 0;
 
-      void print_node() {
-        std::cout << "Event(src = " << src
-                  << ", dest = " << dest
-                  << ", ts = " << timestamp << std::endl;
-      //   std::println("Event(src = {}, dest = {}, ts = {})",
-      //                src, dest, timestamp);        
+      std::vector<Node> path;
+
+      void print_node() const {
+        std::println("Event(src = {}, dest = {}, ts = {})", src, dest, timestamp);
       }
   };
-
+    
   template<typename Event>
   struct EventCompare {
     bool operator()(const Event& a, const Event& b) const {
