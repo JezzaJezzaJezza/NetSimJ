@@ -22,6 +22,12 @@ namespace topo {
           ->for_each_node_impl(std::forward<F>(f));
       }
 
+      template <typename F>
+      auto for_each_endpoint(F&& f) const {
+        static_cast<const Derived*>(this)
+          ->for_each_endpoint_impl(std::forward<F>(f));
+      }
+
       // Method to iterate over all neighbours of any given node
       template <typename F>
       void for_each_neighbour(const Node& x, F&& f) const {

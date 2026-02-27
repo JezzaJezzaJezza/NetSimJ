@@ -3,6 +3,8 @@
 #include <cstddef>
 #include <cstdint>
 #include <stdexcept>
+#include <string>
+
 #include "Base.hpp"
 
 namespace topo {
@@ -101,6 +103,13 @@ namespace topo {
       }
     }
 
+    template <typename F>
+    void for_each_endpoint_impl(F&& f) const {
+      for(std::size_t i = 0; i < num_nodes; i++) {
+        f(static_cast<KaryNode>(i));
+      }
+    }
+
     // classic k-ary n-cube (torus): 2 neighbours per dimension (+1 and -1)
     template <typename F>
     void for_each_neighbour_impl(const KaryNode& x, F&& f) const {
@@ -110,41 +119,32 @@ namespace topo {
       }
     }
 
-    std::size_t degree_impl(const KaryNode&) const {
-      return 2 * n;
-    }
-
-    // neighbour ordering: [dim0 +, dim0 -, dim1 +, dim1 -, ...]
     KaryNode neighbour_at_impl(const KaryNode& x, std::size_t i) const {
       const std::size_t deg = degree_impl(x);
       if (i >= deg) {
         throw std::out_of_range("KaryNcube: neighbour index out of range");
       }
-
       std::size_t dim = i / 2;
       bool forward = (i % 2 == 0);
-      return forward ? step_forward(x, dim) : step_backward(x, dim);
+      return forward ? step_forward(x, dim)
+                     : step_backward(x, dim);
     }
 
-    // DOR interface – same spirit as hypercube: one dimension per coordinate
-    std::size_t dim_count() const {
-      return n;
+    std::size_t degree_impl(const KaryNode&) const {
+      return 2 * n;
     }
 
-    // aligned iff coordinate in that dimension is equal
-    bool dim_aligned(KaryNode a, KaryNode b, std::size_t dim) const {
-      return coord(a, dim) == coord(b, dim);
-    }
-
-    // Dumb, canonical move: if coord differs, take a +1 step in that dimension.
-    // If some fancy router wants non-minimal behavior, it should ignore this
-    // and use for_each_neighbour_impl instead.
-    KaryNode move_to(KaryNode from, KaryNode to, std::size_t dim) const {
-      if (coord(from, dim) == coord(to, dim)) {
-        return from;
+    std::string node_to_string_impl(KaryNode x) const {
+      std::string s;
+      s.push_back('(');
+      for (std::size_t dim = 0; dim < n; ++dim) {
+        s += std::to_string(coord(x, dim));
+        if (dim + 1 < n) {
+          s.push_back(',');
+        }
       }
-      return step_forward(from, dim);
+      s.push_back(')');
+      return s;
     }
   };
-
 }

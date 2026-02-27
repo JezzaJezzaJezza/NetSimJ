@@ -1,5 +1,6 @@
 #include <queue>
 #include <vector>
+
 #include "Helpers/Events.hpp"
 
 namespace engines {
@@ -23,6 +24,7 @@ namespace engines {
     void runSim(const Topo& topo, TrafficGen&& traffic_gen, Router&& router) {
 
       auto flows = traffic_gen(topo);
+
 
       for (auto& f : flows) {
         f.path.clear();

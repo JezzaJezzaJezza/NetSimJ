@@ -48,6 +48,10 @@ namespace topo {
 
     std::vector<std::uint8_t> node_alive;
     std::vector<std::uint8_t> edge_alive;
+
+    std::vector<Node> index_to_node;
+    
+    std::vector<std::uint8_t> is_endpoint;
   };
 
   template <typename Topo>
@@ -59,7 +63,7 @@ namespace topo {
     // index stuff
     NodeIndex<Node> index = build_node_index(topo);
     graph.nodes = index.size();
-    // graph.index_to_node = index.index_to_node;
+    graph.index_to_node = index.index_to_node;
 
     graph.row_offsets.resize(graph.nodes + 1);
 
@@ -94,6 +98,12 @@ namespace topo {
         graph.col_indices[start + i] = static_cast<std::uint32_t> (v_idx);
       }
     }
+
+    graph.is_endpoint.assign(graph.nodes, 0);
+    topo.for_each_endpoint_impl([&](const Node& u) {
+      std::size_t idx_u = index.index_of(u);
+      graph.is_endpoint[idx_u] = 1;
+    });
 
     return graph;
   }

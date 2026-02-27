@@ -9,7 +9,7 @@ namespace topo {
     public:
       using node_type = std::size_t;
 
-      explicit CSRView(const CSRHost<Topo>& graph) : graph_(graph) {}
+      explicit CSRView(const CSRHost<Topo>& graph, const Topo& base) : graph_(graph), base_(base) {}
 
       std::size_t node_count_impl() const {
         return graph_.nodes;
@@ -19,6 +19,15 @@ namespace topo {
       void for_each_node_impl(F&& f) const {
         for (std::size_t i = 0; i < graph_.nodes; i++) {
           if (!graph_.node_alive[i]) continue;
+          f(i);
+        }
+      }
+
+      template <typename F>
+      void for_each_endpoint_impl(F&& f) const {
+        for (std::size_t i = 0; i < graph_.nodes; ++i) {
+          if (!graph_.node_alive[i]) continue;
+          if (!graph_.is_endpoint[i]) continue;
           f(i);
         }
       }
@@ -57,8 +66,14 @@ namespace topo {
 
         return graph_.col_indices[start + i];
       }
+
+      std::string node_to_string_impl(const std::size_t& idx) const {
+        const auto& node = graph_.index_to_node[idx];
+        return base_.node_to_string(node);
+      }
     
     private:
       const CSRHost<Topo>& graph_;
+      const Topo& base_;
   };
 }

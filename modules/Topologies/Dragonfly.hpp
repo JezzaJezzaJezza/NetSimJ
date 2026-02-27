@@ -1,3 +1,4 @@
+#include <functional>
 #include <cstddef>
 #include <stdexcept>
 #include <ostream>
@@ -61,20 +62,46 @@ namespace topo {
       }
 
       std::size_t node_count_impl() const {
-        return num_endpoints * num_switches * num_groups;
+        return (num_endpoints + 1) * num_switches * num_groups;
       }
 
       template <typename F>
       void for_each_node_impl(F&& f) const {
-        for(std::size_t _group = 0; _group < num_groups; _group++) {
-          for(std::size_t _switch = 0; _switch < num_switches; _switch++) {
-            for(std::size_t _endpoint = 0; _endpoint < num_endpoints; _endpoint++) {
-              DragonTruple x{
-                static_cast<int>(_group),
-                static_cast<int>(_switch),
-                static_cast<int>(_endpoint),
+        for (std::size_t g = 0; g < num_groups; ++g) {
+          for (std::size_t s = 0; s < num_switches; ++s) {
+
+            {
+              DragonTruple sw{
+                static_cast<int>(g),
+                static_cast<int>(s),
+                -1
               };
-              f(x);
+              f(sw);
+            }
+
+            for (std::size_t e = 0; e < num_endpoints; ++e) {
+              DragonTruple ep{
+                static_cast<int>(g),
+                static_cast<int>(s),
+                static_cast<int>(e)
+              };
+              f(ep);
+            }
+          }
+        }
+      }
+
+      template <typename F>
+      void for_each_endpoint_impl(F&& f) const {
+        for (std::size_t g = 0; g < num_groups; ++g) {
+          for (std::size_t s = 0; s < num_switches; ++s) {
+            for (std::size_t e = 0; e < num_endpoints; ++e) {
+              DragonTruple ep{
+                static_cast<int>(g),
+                static_cast<int>(s),
+                static_cast<int>(e)
+              };
+              f(ep);
             }
           }
         }
@@ -137,37 +164,38 @@ namespace topo {
       }
 
       DragonTruple neighbour_at_impl(const DragonTruple& x, std::size_t i) const {
-        if(x.endpoint_id >= 0) {
-          if(i != 0 ) {
+        // Endpoint case: only neighbour is its switch
+        if (x.endpoint_id >= 0) {
+          if (i != 0) {
             throw std::out_of_range("Endpoint has only one neighbour.");
           }
-
-          return DragonTruple{
-            x.group_id,
-            x.switch_id,
-            -1
-          };
+          return DragonTruple{ x.group_id, x.switch_id, -1 };
         }
 
+        // Switch case
         const std::size_t deg = degree_impl(x);
-        if(i >= deg) throw std::out_of_range("Neighbour index out of range");
+        if (i >= deg) {
+          throw std::out_of_range("Neighbour index out of range");
+        }
 
         std::size_t idx = i;
 
-        if(idx < num_endpoints) {
+        // 1) endpoints on this switch
+        if (idx < num_endpoints) {
           return DragonTruple{
             x.group_id,
             x.switch_id,
             static_cast<int>(idx)
           };
         }
-        idx -= num_switches;
+        idx -= num_endpoints;
 
-        if(idx < num_switches - 1) {
+        // 2) other switches in same group
+        if (idx < num_switches - 1) {
           std::size_t s = idx;
-
-          if(s >= static_cast<std::size_t>(x.switch_id)) s++;
-
+          if (s >= static_cast<std::size_t>(x.switch_id)) {
+            s++;
+          }
           return DragonTruple{
             x.group_id,
             static_cast<int>(s),
@@ -175,40 +203,33 @@ namespace topo {
           };
         }
         idx -= (num_switches - 1);
-  
-        if(idx >= num_global_links) throw std::logic_error("Bug in neighbour_at_impl - global part.");
 
-        const std::size_t start = x.switch_id * num_global_links;
-        const std::size_t other_group = (x.group_id + 1 + (start + idx)) % num_groups;
+        // 3) global links
+        if (idx >= num_global_links) {
+          throw std::logic_error("Dragonfly::neighbour_at_impl: bad global index");
+        }
+
+        const std::size_t start = static_cast<std::size_t>(x.switch_id) * num_global_links;
+        const std::size_t other_group = (static_cast<std::size_t>(x.group_id) + 1 + start + idx) % num_groups;
+
         return DragonTruple{
           static_cast<int>(other_group),
           x.switch_id,
           -1
         };
       }
-
-      std::size_t dim_count() const {
-        return 3;
-      }
-
-      // TODO: Make these passed by ref -> Currently not as need to match function signature of Hypercube
-      bool dim_aligned(DragonTruple a, DragonTruple b, std::size_t dim) const {
-        switch(dim) {
-          case 0:
-            return a.group_id == b.group_id;
-
-          case 1:
-            return a.group_id == b.group_id &&
-                   a.switch_id == b.switch_id;
-
-          case 2:
-            return a.group_id == b.group_id &&
-                   a.switch_id == b.switch_id &&
-                   a.endpoint_id == b.endpoint_id;
-
-          default:
-            throw std::out_of_range("Invalid dimension in dim_aligned (for DOR).");
-            
+      
+      std::string node_to_string_impl(const DragonTruple& x) const {
+        if (x.endpoint_id >= 0) {
+          // endpoint
+          return "g" + std::to_string(x.group_id) +
+                 "-s" + std::to_string(x.switch_id) +
+                 "-e" + std::to_string(x.endpoint_id);
+        } else {
+          // switch
+          return "g" + std::to_string(x.group_id) +
+                 "-s" + std::to_string(x.switch_id) +
+                 "-SW";
         }
       }
 
@@ -219,90 +240,22 @@ namespace topo {
         return j / num_global_links;
       }
 
-      // TODO: Also look to make this completely reference based
-      DragonTruple move_to(DragonTruple from, DragonTruple to, std::size_t dim) const {
-        switch(dim) {
-
-          // Group dim
-          case 0: {
-              if(from.group_id == to.group_id) return from;
-
-              // Endpoint -> switch
-              if(from.endpoint_id >= 0) {
-                return DragonTruple{
-                  from.group_id,
-                  from.switch_id,
-                  -1
-                };
-              }
-
-              // Check to see if moving groups possible
-              const std::size_t exit_sw = _exit_switch_for_group(from.group_id, to.group_id);
-              if(from.switch_id != exit_sw) {
-                
-                return DragonTruple{
-                  from.group_id,
-                  static_cast<int>(exit_sw),
-                  -1
-                };
-                  
-              } else {
-                
-                return DragonTruple{
-                  to.group_id,
-                  from.switch_id,
-                  -1
-                };
-              }
-            }
-
-          // Switch dim
-          case 1: {
-              if(from.endpoint_id >= 0) {
-                return DragonTruple{
-                  from.group_id,
-                  from.switch_id,
-                  -1
-                };
-              }
-
-              if(from.switch_id == to.switch_id) {
-                return from;
-              }
-
-              return DragonTruple{
-                from.group_id,
-                to.switch_id,
-                -1
-              };
-            }
-
-          // Endpoint dim
-          case 2: {
-              if(from.group_id == to.group_id &&
-                 from.switch_id == to.switch_id &&
-                 from.endpoint_id == to.endpoint_id) return from;
-
-              if(from.endpoint_id == -1) {
-                return DragonTruple{
-                  from.group_id,
-                  from.switch_id,
-                  to.endpoint_id
-                };
-              }
-
-              return DragonTruple{
-                from.group_id,
-                from.switch_id,
-                -1
-              };
-            }
-
-          default:
-              throw std::out_of_range("Invalid dimension in move_to.");
-            
-        }
-      }
   };
 }
 
+namespace std {
+  template<>
+  struct hash<topo::DragonTruple> {
+    size_t operator()(const topo::DragonTruple& x) const noexcept {
+      size_t h = 0;
+      auto mix = [](size_t h, size_t v) {
+        h ^= v + 0x9e3779b97f4a7c15ULL + (h << 6) + (h >> 2);
+        return h;
+      };
+      h = mix(h, std::hash<int>{}(x.group_id));
+      h = mix(h, std::hash<int>{}(x.switch_id));
+      h = mix(h, std::hash<int>{}(x.endpoint_id));
+      return h;
+    }
+  };
+}

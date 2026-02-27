@@ -2,7 +2,7 @@
 
 namespace route {
   template <typename Topo> typename Topo::node_type
-  DOR_next_hop(const Topo& topo, const typename Topo::node_type& cur, const typename Topo::node_type& dest) {
+  hypercube_DOR (const Topo& topo, const typename Topo::node_type& cur, const typename Topo::node_type& dest) {
       using Node = typename Topo::node_type;
       using Unsigned = std::make_unsigned_t<Node>;
 

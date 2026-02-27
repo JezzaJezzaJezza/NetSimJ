@@ -22,7 +22,7 @@ namespace traffic {
 
     std::vector<Node> nodes;
     nodes.reserve(topo.node_count());
-    topo.for_each_node([&](const Node& x) {
+    topo.for_each_endpoint([&](const Node& x) {
        nodes.push_back(x);
      });
     

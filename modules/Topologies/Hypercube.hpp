@@ -34,6 +34,11 @@ namespace topo {
       }
 
       template <typename F>
+      void for_each_endpoint_impl(F&& f) const {
+        for_each_node_impl(std::forward<F>(f));
+      }
+
+      template <typename F>
       void for_each_neighbour_impl(const BitMask& x, F&& f) const {
         for(std::size_t i = 0; i < n; i++) {
           BitMask mask = BitMask{1} << i;
