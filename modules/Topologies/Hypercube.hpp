@@ -51,22 +51,17 @@ namespace topo {
         return x ^ mask;
       }
 
-      std::size_t dim_count() const {
-        return n;
-      }
-      
-      bool dim_aligned(BitMask a, BitMask b, std::size_t dim) const {
-        BitMask mask = BitMask{1} << dim;
-        return ((a ^ b) & mask) == 0;
-      }
+      std::string node_to_string_impl(BitMask x) const {
+        std::string s;
+        s.reserve(n);
 
-      BitMask move_to(BitMask from, BitMask to, std::size_t dim) const {
-        BitMask mask = BitMask{1} << dim;
-
-        if(((from ^ to) & mask) != 0) {
-          return from ^ mask;
+        for(int i = static_cast<int>(n) - 1; i >= 0; i--) {
+          BitMask mask = BitMask{1} << i;
+          s.push_back((x & mask) ? '1' : '0');
         }
-        return from;
+
+        return s;
       }
+
   };
 }

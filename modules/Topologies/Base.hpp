@@ -39,6 +39,10 @@ namespace topo {
         return static_cast<const Derived*>(this)->neighbour_at_impl(x, i);
       }
 
+      std::string node_to_string(const Node& x) const {
+        return static_cast<const Derived*>(this)->node_to_string_impl(x);
+      }
+
       // Get a random neighbour for some node
       template <typename Rand>
       Node random_neighbour(const Node& x, Rand& rng) const {

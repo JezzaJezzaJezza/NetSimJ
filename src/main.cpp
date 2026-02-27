@@ -46,18 +46,20 @@ int main() {
   
   engine.runSim(csr_topo, traffic::gen_rand_traffic<CSRTopo>, route::DOR_next_hop<CSRTopo>);
 
-  for(const auto& ev : engine.finished_flows()) {
-    std::print("Flow {} -> {} | path: ", ev.path.front(), ev.dest);
+for (const auto& ev : engine.finished_flows()) {
+  std::println("Flow {} -> {} | ts = {}",
+               graph.node_to_string(ev.path.front()),
+               graph.node_to_string(ev.dest),
+               ev.timestamp);
 
-    for (std::size_t i = 0; i < ev.path.size(); ++i) {
-      std::print("{}", ev.path[i]);
-      if (i + 1 < ev.path.size()) {
-        std::print(" -> ");
-      }
-    }
-    std::println("");
+  std::print("  path: ");
+  for (std::size_t i = 0; i < ev.path.size(); ++i) {
+    std::print("{}", graph.node_to_string(ev.path[i]));
+    if (i + 1 < ev.path.size()) std::print(" -> ");
   }
-
+  std::println("");
+  std::println("");
+}
   helper::check_basic_topology(graph);  
   std::cout << "Tests passed!" << std::endl;
   return 0;
