@@ -13,9 +13,11 @@ namespace helper {
       std::uint64_t timestamp = 0;
 
       std::vector<Node> path;
+      bool failed = false;
 
+      
       void print_node() const {
-        std::println("Event(src = {}, dest = {}, ts = {})", src, dest, timestamp);
+        std::println("Event(src = {}, dest = {}, ts = {}, failed = {})", src, dest, timestamp, failed);
       }
   };
     

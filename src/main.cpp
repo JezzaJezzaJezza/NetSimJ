@@ -6,6 +6,7 @@
 #include "Topologies/All.hpp"
 #include "Routers/All.hpp"
 #include "Engines/BasicEngine.hpp"
+#include "Topologies/CubeConnectedCycles.hpp"
 
 int main() {
   // using BaseTopo = topo::Hypercube;
@@ -34,7 +35,7 @@ int main() {
   // Topo topo(5); // Twisted cube
   // Topo topo(4); // CCC
 
-  using BaseTopo = topo::Hypercube;
+  using BaseTopo = topo::CubeConnectedCycles;
   using CSRTopo = topo::CSRView<BaseTopo>;
 
   BaseTopo graph(4);
@@ -45,20 +46,21 @@ int main() {
   
   engines::BasicEngine<CSRTopo> engine;
 
-  auto flows = traffic::gen_rand_traffic(graph);
-  
-  engine.runSim(csr_topo, traffic::gen_rand_traffic<CSRTopo>, route::hypercube_DOR<CSRTopo>);
+  engine.runSim(csr_topo, traffic::gen_rand_traffic<CSRTopo>, route::CCC_next_hop<CSRTopo>);
 
-  for(const auto& ev : engine.finished_flows()) {
-    std::println("Flow {} -> {} | ts = {}",
-                 csr_topo.node_to_string(ev.path.front()),
-                 csr_topo.node_to_string(ev.dest),
-                 ev.timestamp);
 
-    std::print("  path: ");
+  for (const auto& ev : engine.finished_flows()) {
+    std::print("Flow {} -> {} | path: ",
+               csr_topo.node_to_string(ev.path.front()),
+               csr_topo.node_to_string(ev.dest));
+
     for (std::size_t i = 0; i < ev.path.size(); ++i) {
       std::print("{}", csr_topo.node_to_string(ev.path[i]));
       if (i + 1 < ev.path.size()) std::print(" -> ");
+    }
+
+    if (ev.failed) {
+      std::print(" -> FAILED");
     }
     std::println("\n");
   }

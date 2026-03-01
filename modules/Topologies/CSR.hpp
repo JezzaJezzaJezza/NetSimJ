@@ -50,6 +50,7 @@ namespace topo {
     std::vector<std::uint8_t> edge_alive;
 
     std::vector<Node> index_to_node;
+    std::unordered_map<Node, std::size_t> node_to_index;
     
     std::vector<std::uint8_t> is_endpoint;
   };
@@ -64,6 +65,7 @@ namespace topo {
     NodeIndex<Node> index = build_node_index(topo);
     graph.nodes = index.size();
     graph.index_to_node = index.index_to_node;
+    graph.node_to_index = index.node_to_index;
 
     graph.row_offsets.resize(graph.nodes + 1);
 

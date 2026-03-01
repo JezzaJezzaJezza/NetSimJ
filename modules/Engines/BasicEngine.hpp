@@ -1,5 +1,9 @@
+#pragma once
+
 #include <queue>
 #include <vector>
+#include <optional>
+#include <type_traits>
 
 #include "Helpers/Events.hpp"
 
@@ -22,13 +26,17 @@ namespace engines {
 
     template <typename TrafficGen, typename Router>
     void runSim(const Topo& topo, TrafficGen&& traffic_gen, Router&& router) {
+      using RouterResult = std::invoke_result_t<Router, const Topo&, const Node&, const Node&>;
+
+      static_assert(std::is_same_v<RouterResult, std::optional<Node>>, "Router must return std::optional<Node>.");
 
       auto flows = traffic_gen(topo);
 
-
+      // init flows
       for (auto& f : flows) {
         f.path.clear();
         f.path.push_back(f.src);
+        f.failed = false;
         eventQueue.push(f);
       }
 
@@ -39,12 +47,20 @@ namespace engines {
         Node cur  = ev.src;
         Node dest = ev.dest;
 
-        if (cur == dest) {
+        if (cur == dest || ev.failed) {
           finished_.push_back(ev);
           continue;
         }
 
-        Node next = router(topo, cur, dest);
+        std::optional<Node> res = router(topo, cur, dest);
+
+        if (!res) {
+          ev.failed = true;
+          finished_.push_back(ev);
+          continue;
+        }
+
+        Node next = *res;
 
         Event nextEv = ev;
         nextEv.src = next;

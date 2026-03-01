@@ -40,6 +40,10 @@ namespace topo {
         return static_cast<const Derived*>(this)->degree_impl(x);
       }
 
+      std::size_t dim_count() const {
+        return static_cast<const Derived*>(this)->dim_count_impl();
+      }
+
       // Get the i'th neighbour of some node
       Node neighbour_at(const Node& x, std::size_t i) const {
         return static_cast<const Derived*>(this)->neighbour_at_impl(x, i);

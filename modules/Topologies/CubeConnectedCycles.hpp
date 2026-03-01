@@ -69,6 +69,11 @@ namespace topo {
     }
 
     template <typename F>
+    void for_each_endpoint_impl(F&& f) const {
+      for_each_node_impl(std::forward<F>(f));
+    }
+
+    template <typename F>
     void for_each_neighbour_impl(const CCCNode& x, F&& f) const {
       CCCNode y;
 
@@ -118,19 +123,36 @@ namespace topo {
       }
     }
 
-    // TODO FIX ALL INTERFACES AND REMAKE DOR
-    std::size_t dim_count() const {
-      return 0; // no meaningful dimension-order routing here
+    std::string node_to_string_impl(const CCCNode& x) const {
+      std::string s;
+      s.reserve(n + 8);
+
+      for (std::size_t i = 0; i < n; ++i) {
+        std::size_t bit = n - 1 - i;
+        bool one = (x.coord >> bit) & 1ULL;
+        s.push_back(one ? '1' : '0');
+      }
+
+      s.push_back('@');
+      s += std::to_string(x.pos);
+      return s;
     }
 
-    bool dim_aligned(const CCCNode&, const CCCNode&, std::size_t) const {
-      throw std::logic_error("CubeConnectedCycles: dim_aligned not supported");
+    std::size_t dim_count_impl() const {
+      return n;
     }
 
-    CCCNode move_to(const CCCNode& from, const CCCNode&, std::size_t) const {
-      // If someone insists on calling this, just return from and let them suffer.
-      return from;
+  };
+}
+
+
+namespace std {
+  template<>
+  struct hash<topo::CCCNode> {
+    std::size_t operator()(const topo::CCCNode& x) const noexcept {
+      std::size_t h1 = std::hash<topo::BitMask>{}(x.coord);
+      std::size_t h2 = std::hash<std::uint32_t>{}(x.pos);
+      return h1 ^ (h2 + 0x9e3779b97f4a7c15ULL + (h1 << 6) + (h1 >> 2));
     }
   };
-
 }
