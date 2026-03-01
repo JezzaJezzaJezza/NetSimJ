@@ -50,3 +50,12 @@ README.md
 main.py
 pyproject.toml
 uv.lock
+
+docs/_build/
+
+docs/.doctrees/
+
+.DS_Store
+
+__pycache__/
+*.py[cod]
