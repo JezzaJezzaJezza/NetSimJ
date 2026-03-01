@@ -44,3 +44,8 @@
 /build
 *.json
 *.cache
+
+.python-version
+README.md
+main.py
+pyproject.toml
