@@ -40,7 +40,8 @@ int main() {
 
   BaseTopo graph(4);
 
-  auto csr = topo::build_csr(graph);
+  std::mt19937 rng(42);
+  auto csr = topo::build_csr(graph, 0.05, 0.1, rng);
 
   CSRTopo csr_topo(csr, graph);
   
