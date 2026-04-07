@@ -1,4 +1,3 @@
-#!/bin/bash
 if [ ! -f src/SimConfig.hpp ] || [ "$1" = "--configure" ]; then
     python3 configure.py || exit 1
 fi

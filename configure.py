@@ -7,17 +7,21 @@ import sys
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 OUTPUT = os.path.join(SCRIPT_DIR, "src", "SimConfig.hpp")
 
-# (name, C++ class, header, [(param_name, description, default)], router)
+# (name, C++ class, header, [(param_name, description, default)], router or None)
 TOPOLOGIES = [
-    ("Hypercube",           "topo::Hypercube",            "Topologies/Hypercube.hpp",            [("dim", "Dimension", 4)],           "DOR"),
-    ("Augmentedcube",       "topo::Augmentedcube",        "Topologies/Augmentedcube.hpp",        [("dim", "Dimension", 4)],           "DOR"),
-    ("CrossedCube",         "topo::CrossedCube",          "Topologies/Crossedcube.hpp",          [("dim", "Dimension", 4)],           "DOR"),
-    ("Zcube",               "topo::Zcube",                "Topologies/Zcube.hpp",                [("dim", "Dimension", 4)],           "DOR"),
-    ("Mobiuscube",          "topo::Mobiuscube",           "Topologies/Mobiuscube.hpp",           [("dim", "Dimension", 4)],           "DOR"),
-    ("FoldedHypercube",     "topo::FoldedHypercube",      "Topologies/FoldedHypercube.hpp",      [("dim", "Dimension", 4)],           "DOR"),
-    ("TwistedCube",         "topo::TwistedCube",          "Topologies/Twistedcube.hpp",          [("dim", "Dimension", 5)],           "DOR"),
-    ("Paritycube",          "topo::TwistedCubeConnected", "Topologies/Paritycube.hpp",           [("dim", "Dimension", 4)],           "DOR"),
-    ("CubeConnectedCycles", "topo::CubeConnectedCycles",  "Topologies/CubeConnectedCycles.hpp",  [("dim", "Dimension", 4)],           "CCC"),
+    ("Hypercube",           "topo::Hypercube",            "Topologies/Hypercube.hpp",            [("dim", "Dimension", 4)],                                                      "DOR"),
+    ("Augmentedcube",       "topo::Augmentedcube",        "Topologies/Augmentedcube.hpp",        [("dim", "Dimension", 4)],                                                      "DOR"),
+    ("CrossedCube",         "topo::CrossedCube",          "Topologies/Crossedcube.hpp",          [("dim", "Dimension", 4)],                                                      "DOR"),
+    ("Zcube",               "topo::Zcube",                "Topologies/Zcube.hpp",                [("dim", "Dimension", 4)],                                                      "DOR"),
+    ("Mobiuscube",          "topo::Mobiuscube",           "Topologies/Mobiuscube.hpp",           [("dim", "Dimension", 4)],                                                      "DOR"),
+    ("FoldedHypercube",     "topo::FoldedHypercube",      "Topologies/FoldedHypercube.hpp",      [("dim", "Dimension", 4)],                                                      "DOR"),
+    ("TwistedCube",         "topo::TwistedCube",          "Topologies/Twistedcube.hpp",          [("dim", "Dimension", 5)],                                                      "DOR"),
+    ("Paritycube",          "topo::TwistedCubeConnected", "Topologies/Paritycube.hpp",           [("dim", "Dimension", 4)],                                                      "DOR"),
+    ("ReducedHypercube",    "topo::ReducedHypercube",     "Topologies/ReducedHypercube.hpp",     [("k", "k (field size)", 2), ("n", "n (sub-dim)", 4)],                           None),
+    ("CubeConnectedCycles", "topo::CubeConnectedCycles",  "Topologies/CubeConnectedCycles.hpp",  [("dim", "Dimension", 4)],                                                      "CCC"),
+    ("KaryNcube",           "topo::KaryNcube",            "Topologies/KaryNcube.hpp",            [("k", "k (radix)", 5), ("n", "n (dimensions)", 7)],                             None),
+    ("BalancedHypercube",   "topo::BalancedHypercube",    "Topologies/BalancedHypercube.hpp",    [("dim", "Dimension", 4)],                                                      None),
+    ("Dragonfly",           "topo::Dragonfly",            "Topologies/Dragonfly.hpp",            [("g", "Groups", 3), ("s", "Switches/group", 1), ("e", "Endpoints/switch", 4)],  None),
 ]
 
 ROUTER_HEADER = {
@@ -25,16 +29,12 @@ ROUTER_HEADER = {
     "CCC": "Routers/CCCRouting.hpp",
 }
 
-# DOR returns Node (not optional), so we wrap it for engine compatibility.
-# CCC already returns std::optional<Node>.
 ROUTER_BODY = {
     "DOR": """\
   template <typename T>
   std::optional<typename T::node_type>
   next_hop(const T& topo, const typename T::node_type& cur, const typename T::node_type& dest) {
-    auto result = route::hypercube_DOR(topo, cur, dest);
-    if (result == cur) return std::nullopt;
-    return result;
+    return route::hypercube_DOR(topo, cur, dest);
   }""",
     "CCC": """\
   template <typename T>
@@ -64,8 +64,9 @@ def main():
 
     # --- Topology ---
     print("Available topologies:")
-    for i, (name, *_) in enumerate(TOPOLOGIES, 1):
-        print(f"  {i:2d}. {name}")
+    for i, (name, _, _, _, router) in enumerate(TOPOLOGIES, 1):
+        note = "" if router else "  (no routing implemented yet)"
+        print(f"  {i:2d}. {name}{note}")
     print()
 
     while True:
@@ -73,6 +74,9 @@ def main():
         try:
             idx = int(raw) - 1
             if 0 <= idx < len(TOPOLOGIES):
+                if TOPOLOGIES[idx][4] is None:
+                    print(f"  {TOPOLOGIES[idx][0]} has no routing implemented yet, pick another.")
+                    continue
                 break
         except ValueError:
             pass
