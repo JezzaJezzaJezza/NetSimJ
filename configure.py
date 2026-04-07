@@ -24,6 +24,11 @@ TOPOLOGIES = [
     ("Dragonfly",           "topo::Dragonfly",            "Topologies/Dragonfly.hpp",            [("g", "Groups", 3), ("s", "Switches/group", 1), ("e", "Endpoints/switch", 4)],  None),
 ]
 
+ENGINES = [
+    ("BasicEngine",    "engines::BasicEngine",    "Engines/BasicEngine.hpp"),
+    ("ParallelEngine", "engines::ParallelEngine",  "Engines/ParallelEngine.hpp"),
+]
+
 ROUTER_HEADER = {
     "DOR": "Routers/DimensionOrdered.hpp",
     "CCC": "Routers/CCCRouting.hpp",
@@ -96,6 +101,28 @@ def main():
     edge_fp = prompt_float("Edge fault probability", 0.10)
     seed = prompt_int("RNG seed", 42)
 
+    # --- Engine ---
+    print("\nAvailable engines:")
+    for i, (ename, _, _) in enumerate(ENGINES, 1):
+        print(f"  {i:2d}. {ename}")
+    print()
+
+    while True:
+        raw = input(f"Select engine [1-{len(ENGINES)}] [1]: ").strip()
+        if not raw:
+            eng_idx = 0
+            break
+        try:
+            eng_idx = int(raw) - 1
+            if 0 <= eng_idx < len(ENGINES):
+                break
+        except ValueError:
+            pass
+        print("  Invalid choice, try again.")
+
+    eng_name, eng_class, eng_header = ENGINES[eng_idx]
+    print(f"\n  -> {eng_name}\n")
+
     # --- Generate header ---
     ctor_args = ", ".join(str(v) for v in param_values)
 
@@ -105,6 +132,7 @@ def main():
 //
 // Topology : {name}({ctor_args})
 // Router   : {router}
+// Engine   : {eng_name}
 // Faults   : node={node_fp}, edge={edge_fp}, seed={seed}
 
 #include <optional>
@@ -114,12 +142,14 @@ def main():
 #include "Topologies/CSR.hpp"
 #include "Topologies/CSRView.hpp"
 #include "{ROUTER_HEADER[router]}"
+#include "{eng_header}"
 #include "Traffic/Rand.hpp"
 
 namespace sim {{
   // Topology
   using BaseTopo = {cpp_class};
   using CSRTopo  = topo::CSRView<BaseTopo>;
+  using Engine   = {eng_class}<CSRTopo>;
 
   inline BaseTopo make_topology() {{ return BaseTopo({ctor_args}); }}
 
@@ -132,6 +162,7 @@ namespace sim {{
   inline const std::string config_summary =
     "Topology : {name}({ctor_args})\\n"
     "Router   : {router}\\n"
+    "Engine   : {eng_name}\\n"
     "Faults   : node={node_fp}, edge={edge_fp}, seed={seed}";
 
   // Router

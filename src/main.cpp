@@ -3,7 +3,6 @@
 
 #include "SimConfig.hpp"
 #include "Helpers/All.hpp"
-#include "Engines/BasicEngine.hpp"
 
 int main() {
   auto graph = sim::make_topology();
@@ -12,7 +11,7 @@ int main() {
   auto csr = topo::build_csr(graph, sim::node_fault_prob, sim::edge_fault_prob, rng);
 
   sim::CSRTopo csr_topo(csr, graph);
-  engines::BasicEngine<sim::CSRTopo> engine;
+  sim::Engine engine;
 
   engine.runSim(csr_topo, sim::gen_traffic<sim::CSRTopo>, sim::next_hop<sim::CSRTopo>);
 
