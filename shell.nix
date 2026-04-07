@@ -4,5 +4,6 @@
     cmake
     ninja
     clang-tools
+    python315
   ];
 }
