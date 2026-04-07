@@ -109,6 +109,7 @@ def main():
 
 #include <optional>
 #include <random>
+#include <string>
 #include "{topo_header}"
 #include "Topologies/CSR.hpp"
 #include "Topologies/CSRView.hpp"
@@ -126,6 +127,12 @@ namespace sim {{
   inline constexpr unsigned rng_seed        = {seed};
   inline constexpr double   node_fault_prob = {node_fp};
   inline constexpr double   edge_fault_prob = {edge_fp};
+
+  // Config summary for logging
+  inline const std::string config_summary =
+    "Topology : {name}({ctor_args})\\n"
+    "Router   : {router}\\n"
+    "Faults   : node={node_fp}, edge={edge_fp}, seed={seed}";
 
   // Router
 {ROUTER_BODY[router]}

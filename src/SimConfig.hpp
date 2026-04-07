@@ -7,6 +7,7 @@
 
 #include <optional>
 #include <random>
+#include <string>
 #include "Topologies/Hypercube.hpp"
 #include "Topologies/CSR.hpp"
 #include "Topologies/CSRView.hpp"
@@ -24,6 +25,12 @@ namespace sim {
   inline constexpr unsigned rng_seed        = 42;
   inline constexpr double   node_fault_prob = 0.05;
   inline constexpr double   edge_fault_prob = 0.1;
+
+  // Config summary for logging
+  inline const std::string config_summary =
+    "Topology : Hypercube(4)\n"
+    "Router   : DOR\n"
+    "Faults   : node=0.05, edge=0.1, seed=42";
 
   // Router
   template <typename T>

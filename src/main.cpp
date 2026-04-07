@@ -16,21 +16,11 @@ int main() {
 
   engine.runSim(csr_topo, sim::gen_traffic<sim::CSRTopo>, sim::next_hop<sim::CSRTopo>);
 
-  for (const auto& ev : engine.finished_flows()) {
-    std::print("Flow {} -> {} | path: ",
-               csr_topo.node_to_string(ev.path.front()),
-               csr_topo.node_to_string(ev.dest));
+  auto metrics = helper::collect_metrics(engine.finished_flows());
+  helper::write_metrics(metrics, sim::config_summary);
+  helper::write_utilization(engine.finished_flows(), csr_topo);
 
-    for (std::size_t i = 0; i < ev.path.size(); ++i) {
-      std::print("{}", csr_topo.node_to_string(ev.path[i]));
-      if (i + 1 < ev.path.size()) std::print(" -> ");
-    }
-
-    if (ev.failed) {
-      std::print(" -> FAILED");
-    }
-    std::println("\n");
-  }
+  std::println("Simulation complete — wrote results.out");
 
   helper::check_basic_topology(graph);
   std::cout << "Tests passed!" << std::endl;

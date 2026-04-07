@@ -4,3 +4,4 @@
 #include "Events.hpp"
 #include "BitOps.hpp"
 #include "Testing.hpp"
+#include "Logging.hpp"
