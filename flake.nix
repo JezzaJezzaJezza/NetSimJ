@@ -15,5 +15,16 @@
             python315
           ];
         };
+
+      devShells.${system}.cuda =
+        pkgs.mkShell {
+          nativeBuildInputs = with pkgs; [
+            cmake
+            ninja
+            python315
+            cudaPackages.cuda_nvcc
+            cudaPackages.cuda_cudart
+          ];
+        };
     };
 }

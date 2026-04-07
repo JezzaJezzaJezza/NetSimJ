@@ -9,24 +9,25 @@ OUTPUT = os.path.join(SCRIPT_DIR, "src", "SimConfig.hpp")
 
 # (name, C++ class, header, [(param_name, description, default)], router or None)
 TOPOLOGIES = [
-    ("Hypercube",           "topo::Hypercube",            "Topologies/Hypercube.hpp",            [("dim", "Dimension", 4)],                                                      "DOR"),
-    ("Augmentedcube",       "topo::Augmentedcube",        "Topologies/Augmentedcube.hpp",        [("dim", "Dimension", 4)],                                                      "DOR"),
-    ("CrossedCube",         "topo::CrossedCube",          "Topologies/Crossedcube.hpp",          [("dim", "Dimension", 4)],                                                      "DOR"),
-    ("Zcube",               "topo::Zcube",                "Topologies/Zcube.hpp",                [("dim", "Dimension", 4)],                                                      "DOR"),
-    ("Mobiuscube",          "topo::Mobiuscube",           "Topologies/Mobiuscube.hpp",           [("dim", "Dimension", 4)],                                                      "DOR"),
-    ("FoldedHypercube",     "topo::FoldedHypercube",      "Topologies/FoldedHypercube.hpp",      [("dim", "Dimension", 4)],                                                      "DOR"),
-    ("TwistedCube",         "topo::TwistedCube",          "Topologies/Twistedcube.hpp",          [("dim", "Dimension", 5)],                                                      "DOR"),
-    ("Paritycube",          "topo::TwistedCubeConnected", "Topologies/Paritycube.hpp",           [("dim", "Dimension", 4)],                                                      "DOR"),
-    ("ReducedHypercube",    "topo::ReducedHypercube",     "Topologies/ReducedHypercube.hpp",     [("k", "k (field size)", 2), ("n", "n (sub-dim)", 4)],                           None),
-    ("CubeConnectedCycles", "topo::CubeConnectedCycles",  "Topologies/CubeConnectedCycles.hpp",  [("dim", "Dimension", 4)],                                                      "CCC"),
-    ("KaryNcube",           "topo::KaryNcube",            "Topologies/KaryNcube.hpp",            [("k", "k (radix)", 5), ("n", "n (dimensions)", 7)],                             None),
-    ("BalancedHypercube",   "topo::BalancedHypercube",    "Topologies/BalancedHypercube.hpp",    [("dim", "Dimension", 4)],                                                      None),
-    ("Dragonfly",           "topo::Dragonfly",            "Topologies/Dragonfly.hpp",            [("g", "Groups", 3), ("s", "Switches/group", 1), ("e", "Endpoints/switch", 4)],  None),
+    ("Hypercube", "topo::Hypercube", "Topologies/Hypercube.hpp", [("dim", "Dimension", 4)], "DOR"),
+    ("Augmentedcube", "topo::Augmentedcube", "Topologies/Augmentedcube.hpp", [("dim", "Dimension", 4)], "DOR"),
+    ("CrossedCube", "topo::CrossedCube", "Topologies/Crossedcube.hpp", [("dim", "Dimension", 4)], "DOR"),
+    ("Zcube", "topo::Zcube", "Topologies/Zcube.hpp", [("dim", "Dimension", 4)], "DOR"),
+    ("Mobiuscube", "topo::Mobiuscube", "Topologies/Mobiuscube.hpp", [("dim", "Dimension", 4)], "DOR"),
+    ("FoldedHypercube", "topo::FoldedHypercube", "Topologies/FoldedHypercube.hpp", [("dim", "Dimension", 4)], "DOR"),
+    ("TwistedCube", "topo::TwistedCube", "Topologies/Twistedcube.hpp", [("dim", "Dimension", 5)], "DOR"),
+    ("Paritycube", "topo::TwistedCubeConnected", "Topologies/Paritycube.hpp", [("dim", "Dimension", 4)], "DOR"),
+    ("ReducedHypercube", "topo::ReducedHypercube", "Topologies/ReducedHypercube.hpp", [("k", "k (field size)", 2), ("n", "n (sub-dim)", 4)], None),
+    ("CubeConnectedCycles", "topo::CubeConnectedCycles", "Topologies/CubeConnectedCycles.hpp",  [("dim", "Dimension", 4)], "CCC"),
+    ("KaryNcube", "topo::KaryNcube", "Topologies/KaryNcube.hpp", [("k", "k (radix)", 5), ("n", "n (dimensions)", 7)], None),
+    ("BalancedHypercube", "topo::BalancedHypercube", "Topologies/BalancedHypercube.hpp", [("dim", "Dimension", 4)], None),
+    ("Dragonfly", "topo::Dragonfly","Topologies/Dragonfly.hpp", [("g", "Groups", 3), ("s", "Switches/group", 1), ("e", "Endpoints/switch", 4)], None),
 ]
 
 ENGINES = [
-    ("BasicEngine",    "engines::BasicEngine",    "Engines/BasicEngine.hpp"),
-    ("ParallelEngine", "engines::ParallelEngine",  "Engines/ParallelEngine.hpp"),
+    ("BasicEngine",    "engines::BasicEngine",    "Engines/BasicEngine.hpp",   False),
+    ("ParallelEngine", "engines::ParallelEngine",  "Engines/ParallelEngine.hpp", False),
+    ("CudaEngine",     "engines::CudaEngine",      "Engines/CudaEngine.hpp",    True),
 ]
 
 ROUTER_HEADER = {
@@ -103,8 +104,9 @@ def main():
 
     # --- Engine ---
     print("\nAvailable engines:")
-    for i, (ename, _, _) in enumerate(ENGINES, 1):
-        print(f"  {i:2d}. {ename}")
+    for i, (ename, _, _, is_cuda) in enumerate(ENGINES, 1):
+        tag = "  (requires CUDA)" if is_cuda else ""
+        print(f"  {i:2d}. {ename}{tag}")
     print()
 
     while True:
@@ -120,11 +122,17 @@ def main():
             pass
         print("  Invalid choice, try again.")
 
-    eng_name, eng_class, eng_header = ENGINES[eng_idx]
+    eng_name, eng_class, eng_header, is_cuda = ENGINES[eng_idx]
     print(f"\n  -> {eng_name}\n")
 
     # --- Generate header ---
     ctor_args = ", ".join(str(v) for v in param_values)
+
+    # CudaEngine works on BaseTopo directly (no CSR/faults on device)
+    if is_cuda:
+        engine_topo = "BaseTopo"
+    else:
+        engine_topo = "CSRTopo"
 
     header = f"""\
 #pragma once
@@ -146,10 +154,12 @@ def main():
 #include "Traffic/Rand.hpp"
 
 namespace sim {{
+#define SIM_USE_CUDA {"1" if is_cuda else "0"}
+
   // Topology
   using BaseTopo = {cpp_class};
   using CSRTopo  = topo::CSRView<BaseTopo>;
-  using Engine   = {eng_class}<CSRTopo>;
+  using Engine   = {eng_class}<{engine_topo}>;
 
   inline BaseTopo make_topology() {{ return BaseTopo({ctor_args}); }}
 
@@ -178,7 +188,10 @@ namespace sim {{
         f.write(header)
 
     print(f"\nGenerated {os.path.relpath(OUTPUT, SCRIPT_DIR)}")
-    print("Run ./compile.sh to build.\n")
+    if is_cuda:
+        print("Run ./compile.sh --cuda to build with CUDA support.\n")
+    else:
+        print("Run ./compile.sh to build.\n")
 
 
 if __name__ == "__main__":

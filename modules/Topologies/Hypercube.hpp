@@ -47,6 +47,8 @@ namespace topo {
         }
       }
 
+      std::size_t dim() const { return n; }
+
       std::size_t degree_impl(const BitMask&) const {
         return n;
       }

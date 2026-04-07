@@ -17,6 +17,8 @@
 #include "Traffic/Rand.hpp"
 
 namespace sim {
+#define SIM_USE_CUDA 0
+
   // Topology
   using BaseTopo = topo::Hypercube;
   using CSRTopo  = topo::CSRView<BaseTopo>;
