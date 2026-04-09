@@ -30,8 +30,11 @@ namespace helper {
     double      avg_latency    = 0.0;
     std::size_t max_latency    = 0;
 
-    // Per-flow hop counts for distribution
+    // Per-flow hop counts for distribution (used by BasicEngine / ParallelEngine)
     std::vector<std::size_t> hop_counts;
+
+    // Pre-computed hop distribution (used by LiteEngine; also populated by collect_metrics)
+    std::map<std::size_t, std::size_t> hop_distribution;
   };
 
   template <typename Node>
@@ -90,6 +93,11 @@ namespace helper {
     }
     m.avg_latency = lat_sum / n;
 
+    // Build hop distribution from hop_counts
+    for (auto h : m.hop_counts) {
+      m.hop_distribution[h]++;
+    }
+
     return m;
   }
 
@@ -114,7 +122,7 @@ namespace helper {
     }
 
     out << "\n--- Hop Count (successful flows) ---\n";
-    if (m.hop_counts.empty()) {
+    if (m.success_flows == 0) {
       out << "No successful flows.\n";
     } else {
       out << "Min              : " << m.min_hops     << "\n";
@@ -125,7 +133,7 @@ namespace helper {
     }
 
     out << "\n--- Latency (successful flows) ---\n";
-    if (m.hop_counts.empty()) {
+    if (m.success_flows == 0) {
       out << "No successful flows.\n";
     } else {
       out << "Avg latency      : " << m.avg_latency  << "\n";
@@ -133,16 +141,11 @@ namespace helper {
     }
 
     // Hop distribution
-    if (!m.hop_counts.empty()) {
+    if (!m.hop_distribution.empty()) {
       out << "\n--- Hop Distribution ---\n";
-
-      std::size_t max_hop = m.hop_counts.back();
-      std::vector<std::size_t> dist(max_hop + 1, 0);
-      for (auto h : m.hop_counts) dist[h]++;
-
-      for (std::size_t i = 0; i <= max_hop; ++i) {
-        if (dist[i] > 0) {
-          out << "  " << i << " hops : " << dist[i] << "\n";
+      for (auto& [h, c] : m.hop_distribution) {
+        if (c > 0) {
+          out << "  " << h << " hops : " << c << "\n";
         }
       }
     }

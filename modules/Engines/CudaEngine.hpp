@@ -5,21 +5,24 @@
 #include <type_traits>
 
 #include "Helpers/Events.hpp"
+#include "Topologies/CSR.hpp"
 
 namespace engines {
 
-  // Implemented in CudaEngine.cu (compiled by nvcc)
+  // Forward-declare the .cu entry point (compiled by nvcc).
   namespace cuda_detail {
     void run_flows_on_gpu(
-        const uint64_t* srcs,
-        const uint64_t* dests,
+        const uint32_t* h_row_offsets,  uint32_t num_nodes,
+        const uint32_t* h_col_indices,  uint32_t num_edges,
+        const uint8_t*  h_node_alive,
+        const uint8_t*  h_edge_alive,
+        const uint64_t* h_index_to_node,
+        const uint32_t* h_flow_srcs,
+        const uint32_t* h_flow_dests,
         uint32_t num_flows,
-        uint32_t dim,
-        bool record_paths,
-        uint32_t* out_hop_counts,
-        uint8_t*  out_failed,
-        uint64_t* out_paths,
-        uint32_t  max_path_len);
+        uint32_t max_hops,
+        uint32_t* h_out_hop_counts,
+        uint8_t*  h_out_failed);
   }
 
   template <typename Topo>
@@ -35,48 +38,56 @@ namespace engines {
       return finished_;
     }
 
-    template <typename TrafficGen, typename Router>
-    void runSim(const Topo& topo, TrafficGen&& traffic_gen, Router&& /*router*/) {
-      auto flows = traffic_gen(topo);
+    // TrafficTopo may be BaseTopo or CSRView<BaseTopo> — whatever the
+    // traffic generator needs.  The CSR graph supplies the adjacency and
+    // fault data that gets copied to the GPU.
+    template <typename TrafficTopo, typename TrafficGen>
+    void runSim(const topo::CSRHost<Topo>& csr,
+                const TrafficTopo& traffic_topo,
+                TrafficGen&& traffic_gen) {
+      auto flows = traffic_gen(traffic_topo);
       uint32_t num_flows = static_cast<uint32_t>(flows.size());
-      uint32_t dim = static_cast<uint32_t>(topo.dim());
-      uint32_t max_path_len = dim + 1;
+      uint32_t max_hops  = static_cast<uint32_t>(csr.nodes);
 
-      // Extract src/dest into flat arrays
-      std::vector<uint64_t> srcs(num_flows);
-      std::vector<uint64_t> dests(num_flows);
+      // Convert flow src/dest node values to CSR indices.
+      std::vector<uint32_t> flow_srcs(num_flows);
+      std::vector<uint32_t> flow_dests(num_flows);
       for (uint32_t i = 0; i < num_flows; ++i) {
-        srcs[i]  = flows[i].src;
-        dests[i] = flows[i].dest;
+        flow_srcs[i]  = static_cast<uint32_t>(csr.node_to_index.at(flows[i].src));
+        flow_dests[i] = static_cast<uint32_t>(csr.node_to_index.at(flows[i].dest));
       }
 
-      // Allocate host output buffers
+      // Outputs from GPU.
       std::vector<uint32_t> hop_counts(num_flows);
       std::vector<uint8_t>  failed(num_flows);
-      std::vector<uint64_t> paths(static_cast<std::size_t>(num_flows) * max_path_len);
 
       cuda_detail::run_flows_on_gpu(
-          srcs.data(), dests.data(), num_flows, dim,
-          /*record_paths=*/true,
-          hop_counts.data(), failed.data(),
-          paths.data(), max_path_len);
+          csr.row_offsets.data(),
+          static_cast<uint32_t>(csr.nodes),
+          csr.col_indices.data(),
+          static_cast<uint32_t>(csr.edges),
+          csr.node_alive.data(),
+          csr.edge_alive.data(),
+          csr.index_to_node.data(),
+          flow_srcs.data(),
+          flow_dests.data(),
+          num_flows,
+          max_hops,
+          hop_counts.data(),
+          failed.data());
 
-      // Convert results back to Event format
+      // Reconstruct events for collect_metrics compatibility.
+      // Path is sized correctly (hops + 1) but does not contain
+      // intermediate node values — hop count and latency metrics
+      // are fully accurate; per-node utilization is not available.
       finished_.resize(num_flows);
       for (uint32_t i = 0; i < num_flows; ++i) {
-        Event& ev = finished_[i];
-        uint32_t hops = hop_counts[i];
-
-        ev.dest = static_cast<Node>(dests[i]);
-        ev.src = static_cast<Node>(dests[i]);
-        ev.timestamp = hops;
-        ev.failed = (failed[i] != 0);
-
-        ev.path.resize(hops + 1);
-        const uint64_t* row = &paths[static_cast<std::size_t>(i) * max_path_len];
-        for (uint32_t j = 0; j <= hops; ++j) {
-          ev.path[j] = static_cast<Node>(row[j]);
-        }
+        Event& ev    = finished_[i];
+        ev.src       = flows[i].src;
+        ev.dest      = flows[i].dest;
+        ev.timestamp = hop_counts[i];
+        ev.failed    = (failed[i] != 0);
+        ev.path.resize(hop_counts[i] + 1);
       }
     }
 

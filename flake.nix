@@ -4,27 +4,32 @@
   outputs = { nixpkgs, ... }:
     let
       system = "x86_64-linux";
-      pkgs = nixpkgs.legacyPackages.${system};
-    in {
-      devShells.${system}.default =
-        (pkgs.mkShell.override { stdenv = pkgs.clangStdenv; }) {
-          nativeBuildInputs = with pkgs; [
-            cmake
-            ninja
-            clang-tools
-            python315
-          ];
-        };
+      pkgs = import nixpkgs {
+        inherit system;
+        config.allowUnfree = true;
+      };
 
-      devShells.${system}.cuda =
-        pkgs.mkShell {
-          nativeBuildInputs = with pkgs; [
-            cmake
-            ninja
-            python315
-            cudaPackages.cuda_nvcc
-            cudaPackages.cuda_cudart
-          ];
-        };
+      commonBuildInputs = with pkgs; [
+        cmake
+        ninja
+        python315
+      ];
+    in {
+      devShells.${system} = {
+        default =
+          (pkgs.mkShell.override { stdenv = pkgs.clangStdenv; }) {
+            nativeBuildInputs = commonBuildInputs ++ (with pkgs; [
+              clang-tools
+            ]);
+          };
+
+        cuda =
+          pkgs.mkShell {
+            nativeBuildInputs = commonBuildInputs ++ (with pkgs; [
+              cudaPackages.cuda_nvcc
+              cudaPackages.cuda_cudart
+            ]);
+          };
+      };
     };
 }
