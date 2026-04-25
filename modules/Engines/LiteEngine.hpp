@@ -4,7 +4,6 @@
 #include <optional>
 #include <type_traits>
 #include <thread>
-#include <cstdint>
 #include <cmath>
 #include <limits>
 #include <map>
@@ -26,35 +25,31 @@ namespace engines {
     using Node = typename Topo::node_type;
 
     template <typename Router>
-    void runSim(const Topo& topo, Router&& router,
-                unsigned num_threads = std::thread::hardware_concurrency()) {
-      using RouterResult =
-        std::invoke_result_t<Router, const Topo&, const Node&, const Node&>;
-
-      static_assert(std::is_same_v<RouterResult, std::optional<Node>>,
-                    "Router must return std::optional<Node>.");
+    void runSim(const Topo& topo, Router&& router, unsigned num_threads = std::thread::hardware_concurrency()) {
 
       if (num_threads == 0) num_threads = 1;
 
       // Collect live endpoints once — the only large allocation.
       std::vector<Node> endpoints;
+      
       endpoints.reserve(topo.node_count());
+
       topo.for_each_endpoint([&](const Node& x) {
         endpoints.push_back(x);
       });
 
-      const std::size_t n        = endpoints.size();
-      const std::size_t hop_limit = topo.node_count(); // loop guard
+      const std::size_t n = endpoints.size();
+      const std::size_t hop_limit = topo.node_count();
 
-      // ----- per-thread accumulator -----------------------------------
+      // --- thread accumulator ---
       struct Accum {
-        std::size_t total       = 0;
-        std::size_t success     = 0;
-        std::size_t failed      = 0;
-        double      sum_hops    = 0.0;
-        double      sum_hops_sq = 0.0;
-        std::size_t min_hops    = std::numeric_limits<std::size_t>::max();
-        std::size_t max_hops    = 0;
+        std::size_t total = 0;
+        std::size_t success = 0;
+        std::size_t failed = 0;
+        double sum_hops = 0.0;
+        double sum_hops_sq = 0.0;
+        std::size_t min_hops = std::numeric_limits<std::size_t>::max();
+        std::size_t max_hops = 0;
         std::map<std::size_t, std::size_t> hop_hist;
       };
 

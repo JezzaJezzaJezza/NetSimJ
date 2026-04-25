@@ -20,6 +20,8 @@
           (pkgs.mkShell.override { stdenv = pkgs.clangStdenv; }) {
             nativeBuildInputs = commonBuildInputs ++ (with pkgs; [
               clang-tools
+              hyperfine
+              valgrind
             ]);
           };
 

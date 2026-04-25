@@ -22,7 +22,8 @@ namespace engines {
         uint32_t num_flows,
         uint32_t max_hops,
         uint32_t* h_out_hop_counts,
-        uint8_t*  h_out_failed);
+        uint8_t*  h_out_failed,
+        uint32_t* h_out_node_transits);
   }
 
   template <typename Topo>
@@ -36,6 +37,10 @@ namespace engines {
 
     const std::vector<Event>& finished_flows() const {
       return finished_;
+    }
+
+    const std::vector<uint32_t>& node_transit_counts() const {
+      return node_transits_;
     }
 
     // TrafficTopo may be BaseTopo or CSRView<BaseTopo> — whatever the
@@ -52,7 +57,7 @@ namespace engines {
       // Convert flow src/dest node values to CSR indices.
       std::vector<uint32_t> flow_srcs(num_flows);
       std::vector<uint32_t> flow_dests(num_flows);
-      for (uint32_t i = 0; i < num_flows; ++i) {
+      for (uint32_t i = 0; i < num_flows; i++) {
         flow_srcs[i]  = static_cast<uint32_t>(csr.node_to_index.at(flows[i].src));
         flow_dests[i] = static_cast<uint32_t>(csr.node_to_index.at(flows[i].dest));
       }
@@ -60,6 +65,7 @@ namespace engines {
       // Outputs from GPU.
       std::vector<uint32_t> hop_counts(num_flows);
       std::vector<uint8_t>  failed(num_flows);
+      node_transits_.assign(csr.nodes, 0);
 
       cuda_detail::run_flows_on_gpu(
           csr.row_offsets.data(),
@@ -74,14 +80,15 @@ namespace engines {
           num_flows,
           max_hops,
           hop_counts.data(),
-          failed.data());
+          failed.data(),
+          node_transits_.data());
 
       // Reconstruct events for collect_metrics compatibility.
       // Path is sized correctly (hops + 1) but does not contain
       // intermediate node values — hop count and latency metrics
-      // are fully accurate; per-node utilization is not available.
+      // are fully accurate.
       finished_.resize(num_flows);
-      for (uint32_t i = 0; i < num_flows; ++i) {
+      for (uint32_t i = 0; i < num_flows; i++) {
         Event& ev    = finished_[i];
         ev.src       = flows[i].src;
         ev.dest      = flows[i].dest;
@@ -93,6 +100,7 @@ namespace engines {
 
   private:
     std::vector<Event> finished_;
+    std::vector<uint32_t> node_transits_;
   };
 
 }

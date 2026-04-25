@@ -16,7 +16,7 @@ TOPOLOGIES = [
     ("Mobiuscube", "topo::Mobiuscube", "Topologies/Mobiuscube.hpp", [("dim", "Dimension", 4)], "DOR"),
     ("FoldedHypercube", "topo::FoldedHypercube", "Topologies/FoldedHypercube.hpp", [("dim", "Dimension", 4)], "DOR"),
     ("TwistedCube", "topo::TwistedCube", "Topologies/Twistedcube.hpp", [("dim", "Dimension", 5)], "DOR"),
-    ("Paritycube", "topo::TwistedCubeConnected", "Topologies/Paritycube.hpp", [("dim", "Dimension", 4)], "DOR"),
+    ("TwistedCubeConnected", "topo::TwistedCubeConnected", "Topologies/TwistedCubeConnected.hpp", [("dim", "Dimension", 4)], "DOR"),
     ("ReducedHypercube", "topo::ReducedHypercube", "Topologies/ReducedHypercube.hpp", [("k", "k (field size)", 2), ("n", "n (sub-dim)", 4)], None),
     ("CubeConnectedCycles", "topo::CubeConnectedCycles", "Topologies/CubeConnectedCycles.hpp",  [("dim", "Dimension", 4)], "CCC"),
     ("KaryNcube", "topo::KaryNcube", "Topologies/KaryNcube.hpp", [("k", "k (radix)", 5), ("n", "n (dimensions)", 7)], None),
@@ -25,10 +25,10 @@ TOPOLOGIES = [
 ]
 
 ENGINES = [
-    ("BasicEngine",    "engines::BasicEngine",    "Engines/BasicEngine.hpp",   False, False),
-    ("ParallelEngine", "engines::ParallelEngine",  "Engines/ParallelEngine.hpp", False, False),
-    ("LiteEngine",     "engines::LiteEngine",      "Engines/LiteEngine.hpp",    False, True),
-    ("CudaEngine",     "engines::CudaEngine",      "Engines/CudaEngine.hpp",    True,  False),
+    ("BasicEngine",      "engines::BasicEngine",      "Engines/BasicEngine.hpp",      False, False),
+    ("ParallelEngine",   "engines::ParallelEngine",   "Engines/ParallelEngine.hpp",   False, False),
+    ("LiteEngine",       "engines::LiteEngine",       "Engines/LiteEngine.hpp",       False, True),
+    ("CudaEngine",       "engines::CudaEngine",       "Engines/CudaEngine.hpp",       True,  False),
 ]
 
 TRAFFIC_PATTERNS = [
@@ -120,8 +120,8 @@ def main():
     else:
         cpu_engines = [(i, e) for i, e in enumerate(ENGINES) if not e[3]]
         print("Available engines:")
-        for display_i, (_, (ename, _, _, _, is_lite)) in enumerate(cpu_engines, 1):
-            tag = "  (low-memory, AllToAll only)" if is_lite else ""
+        for display_i, (_, (ename, _, _, _, is_lite_tag)) in enumerate(cpu_engines, 1):
+            tag = "  (low-memory, AllToAll only)" if is_lite_tag else ""
             print(f"  {display_i:2d}. {ename}{tag}")
         print()
 

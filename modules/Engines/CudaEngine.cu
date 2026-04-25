@@ -24,7 +24,8 @@ namespace engines::cuda_detail {
       uint32_t num_flows,
       uint32_t max_hops,
       uint32_t* h_out_hop_counts,
-      uint8_t*  h_out_failed)
+      uint8_t*  h_out_failed,
+      uint32_t* h_out_node_transits)
   {
     // ---- CSR device allocations ----
     uint32_t* d_row_offsets   = nullptr;
@@ -53,13 +54,17 @@ namespace engines::cuda_detail {
 
     std::size_t fb = static_cast<std::size_t>(num_flows);
 
-    CUDA_CHECK(cudaMalloc(&d_flow_srcs,  fb * sizeof(uint32_t)));
-    CUDA_CHECK(cudaMalloc(&d_flow_dests, fb * sizeof(uint32_t)));
-    CUDA_CHECK(cudaMalloc(&d_hop_counts, fb * sizeof(uint32_t)));
-    CUDA_CHECK(cudaMalloc(&d_failed,     fb * sizeof(uint8_t)));
+    uint32_t* d_node_transits = nullptr;
+
+    CUDA_CHECK(cudaMalloc(&d_flow_srcs,      fb * sizeof(uint32_t)));
+    CUDA_CHECK(cudaMalloc(&d_flow_dests,     fb * sizeof(uint32_t)));
+    CUDA_CHECK(cudaMalloc(&d_hop_counts,     fb * sizeof(uint32_t)));
+    CUDA_CHECK(cudaMalloc(&d_failed,         fb * sizeof(uint8_t)));
+    CUDA_CHECK(cudaMalloc(&d_node_transits,  num_nodes * sizeof(uint32_t)));
 
     CUDA_CHECK(cudaMemcpy(d_flow_srcs,  h_flow_srcs,  fb * sizeof(uint32_t), cudaMemcpyHostToDevice));
     CUDA_CHECK(cudaMemcpy(d_flow_dests, h_flow_dests, fb * sizeof(uint32_t), cudaMemcpyHostToDevice));
+    CUDA_CHECK(cudaMemset(d_node_transits, 0, num_nodes * sizeof(uint32_t)));
 
     // ---- Build device CSR handle ----
     route::cuda_detail::CSRDevice csr;
@@ -76,14 +81,15 @@ namespace engines::cuda_detail {
 
     simulate_flows_kernel<<<grid_size, block_size>>>(
         csr, d_flow_srcs, d_flow_dests, num_flows, max_hops,
-        d_hop_counts, d_failed);
+        d_hop_counts, d_failed, d_node_transits);
 
     CUDA_CHECK(cudaGetLastError());
     CUDA_CHECK(cudaDeviceSynchronize());
 
     // ---- Copy results back ----
-    CUDA_CHECK(cudaMemcpy(h_out_hop_counts, d_hop_counts, fb * sizeof(uint32_t), cudaMemcpyDeviceToHost));
-    CUDA_CHECK(cudaMemcpy(h_out_failed,     d_failed,     fb * sizeof(uint8_t),  cudaMemcpyDeviceToHost));
+    CUDA_CHECK(cudaMemcpy(h_out_hop_counts,    d_hop_counts,     fb * sizeof(uint32_t),        cudaMemcpyDeviceToHost));
+    CUDA_CHECK(cudaMemcpy(h_out_failed,        d_failed,         fb * sizeof(uint8_t),         cudaMemcpyDeviceToHost));
+    CUDA_CHECK(cudaMemcpy(h_out_node_transits, d_node_transits,  num_nodes * sizeof(uint32_t), cudaMemcpyDeviceToHost));
 
     // ---- Cleanup ----
     cudaFree(d_row_offsets);
@@ -95,6 +101,7 @@ namespace engines::cuda_detail {
     cudaFree(d_flow_dests);
     cudaFree(d_hop_counts);
     cudaFree(d_failed);
+    cudaFree(d_node_transits);
   }
 
 }

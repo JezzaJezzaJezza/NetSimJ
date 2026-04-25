@@ -14,7 +14,8 @@ namespace engines::cuda_detail {
       uint32_t  num_flows,
       uint32_t  max_hops,
       uint32_t* __restrict__ out_hop_counts,
-      uint8_t*  __restrict__ out_failed)
+      uint8_t*  __restrict__ out_failed,
+      uint32_t* __restrict__ node_transit_counts)
   {
     uint32_t tid = blockIdx.x * blockDim.x + threadIdx.x;
     if (tid >= num_flows) return;
@@ -30,8 +31,14 @@ namespace engines::cuda_detail {
         out_failed[tid] = 1;
         return;
       }
+
+      // Count intermediate transits (not src, not dest)
+      if (hops > 0) {
+        atomicAdd(&node_transit_counts[cur], 1);
+      }
+
       cur = next;
-      ++hops;
+      hops++;
     }
 
     out_hop_counts[tid] = hops;

@@ -14,6 +14,7 @@ namespace helper {
 
       std::vector<Node> path;
       bool failed = false;
+      std::size_t retries = 0;
 
       
       void print_node() const {

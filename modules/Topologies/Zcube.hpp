@@ -98,6 +98,11 @@ namespace topo {
     }
 
     template <typename F>
+    void for_each_endpoint_impl(F&& f) const {
+      for_each_node_impl(std::forward<F>(f));
+    }
+
+    template <typename F>
     void for_each_neighbour_impl(const BitMask& x, F&& f) const {
       for (std::size_t dim = 0; dim < n; ++dim) {
         f(neighbour_at_impl(x, dim));
@@ -130,6 +135,15 @@ namespace topo {
         return from;
       }
       return neighbour_dim(from, dim, n);
+    }
+
+    std::string node_to_string_impl(BitMask x) const {
+      std::string s;
+      s.reserve(n);
+      for (int i = static_cast<int>(n) - 1; i >= 0; i--) {
+        s.push_back((x >> i) & 1 ? '1' : '0');
+      }
+      return s;
     }
   };
 }

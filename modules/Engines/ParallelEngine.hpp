@@ -47,7 +47,7 @@ namespace engines {
       std::size_t remain = total % num_threads;
 
       std::size_t offset = 0;
-      for (unsigned t = 0; t < num_threads; ++t) {
+      for (unsigned t = 0; t < num_threads; t++) {
         std::size_t count = chunk + (t < remain ? 1 : 0);
         std::size_t start = offset;
         std::size_t end   = offset + count;
@@ -56,7 +56,7 @@ namespace engines {
         threads.emplace_back([&topo, &router, &flows, &thread_results, t, start, end]() {
           auto& local_finished = thread_results[t];
 
-          for (std::size_t i = start; i < end; ++i) {
+          for (std::size_t i = start; i < end; i++) {
             Event ev = flows[i];
 
             while (true) {

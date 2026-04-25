@@ -12,7 +12,7 @@
 #include "BalancedHypercube.hpp"
 #include "Twistedcube.hpp"
 #include "CubeConnectedCycles.hpp"
-#include "Paritycube.hpp"
+#include "TwistedCubeConnected.hpp"
 
 #include "CSR.hpp"
 #include "CSRView.hpp"

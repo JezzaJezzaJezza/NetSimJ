@@ -93,7 +93,7 @@ namespace topo {
       if (n > MAX_BITS) {
         throw std::invalid_argument("TwistedCube: dimension too large for BitMask");
       }
-      // Classical twisted cube is defined for odd n: 1,3,5,...
+      // classical twisted cube is defined for odd n: 1,3,5,...
       if (n % 2 == 0) {
         throw std::invalid_argument("TwistedCube: n must be odd (1,3,5,...)");
       }
@@ -109,6 +109,11 @@ namespace topo {
         BitMask x = static_cast<BitMask>(i);
         f(x);
       }
+    }
+
+    template <typename F>
+    void for_each_endpoint_impl(F&& f) const {
+      for_each_node_impl(std::forward<F>(f));
     }
 
     template <typename F>
@@ -150,6 +155,15 @@ namespace topo {
         return from;
       }
       return neighbour_at_impl(from, dim);
+    }
+
+    std::string node_to_string_impl(BitMask x) const {
+      std::string s;
+      s.reserve(n);
+      for (int i = static_cast<int>(n) - 1; i >= 0; i--) {
+        s.push_back((x >> i) & 1 ? '1' : '0');
+      }
+      return s;
     }
   };
 }

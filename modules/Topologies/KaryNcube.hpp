@@ -9,17 +9,15 @@
 
 namespace topo {
 
-
-// GPT Optimised (used non-tuple structure approach - honestly have no idea how it managed it)
-
+  // mixed-radix
   using KaryNode = std::uint64_t;
 
   class KaryNcube : public BaseTopo<KaryNcube, KaryNode> {
   private:
-    const std::size_t k;          // nodes per dimension
-    const std::size_t n;          // number of dimensions
-    const std::size_t num_nodes;  // k^n
-    std::size_t* stride;          // length n, stride[d] = k^d
+    const std::size_t k; // nodes per dimension
+    const std::size_t n; // number of dimensions
+    const std::size_t num_nodes; // k^n
+    std::size_t* stride; // length n, stride[d] = k^d
 
     static std::size_t int_pow(std::size_t base, std::size_t exp) {
       std::size_t result = 1;

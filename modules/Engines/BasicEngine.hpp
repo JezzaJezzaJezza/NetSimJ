@@ -14,7 +14,7 @@ namespace engines {
   public:
     using Node  = typename Topo::node_type;
     using Event = helper::BasicEvents<Node>;
-    using Queue = std::priority_queue<Event, std::vector<Event>, helper::EventCompare<Event>>;
+    using Queue = std::priority_queue<Event, std::vector<Event>, helper::EventCompare<Event>>; // use for congestion engines later
 
     void enqueue(const Event& ev) {
       eventQueue.push(ev);
