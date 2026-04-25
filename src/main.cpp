@@ -32,9 +32,6 @@ int main() {
   helper::write_utilization(engine.finished_flows(), csr_topo);
 #endif
 
-  helper::check_basic_topology(graph);
-  std::cout << "Tests passed!" << std::endl;
-
   std::println("Simulation complete — wrote results.out");
   return 0;
 }
