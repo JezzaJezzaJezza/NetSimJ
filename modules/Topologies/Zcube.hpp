@@ -34,13 +34,13 @@ namespace topo {
         std::size_t idx_top = m - 1 - t;
         std::size_t idx_bottom = k - 1 - t;
 
-        BitMask top_bit = (x >> idx_top)    & BitMask{1};
+        BitMask top_bit = (x >> idx_top) & BitMask{1};
         BitMask bottom_bit = (x >> idx_bottom) & BitMask{1};
         BitMask new_bit = top_bit ^ bottom_bit;
 
         // clear and set top bit
         result &= ~(BitMask{1} << idx_top);
-        result |=  (new_bit     << idx_top);
+        result |= (new_bit << idx_top);
       }
       return result;
     }
@@ -59,7 +59,7 @@ namespace topo {
       const BitMask low_mask = (BitMask{1} << msb_idx) - 1;
 
       BitMask prefix = (x >> msb_idx) & BitMask{1};
-      BitMask low    = x & low_mask;
+      BitMask low = x & low_mask;
 
       if (dim == msb_idx) {
         BitMask mapped = phi(low, msb_idx);

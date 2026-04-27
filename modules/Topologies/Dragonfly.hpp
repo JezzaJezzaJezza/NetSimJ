@@ -32,10 +32,10 @@ namespace topo {
   class Dragonfly : public BaseTopo<Dragonfly, DragonTruple> {
     // Classical Dally/Kim style
     private:
-      const std::size_t num_endpoints; // Per router
+      const std::size_t num_endpoints; // Per switch
       const std::size_t num_switches; // Per group
       const std::size_t num_groups;
-      const std::size_t num_global_links; // Per router
+      const std::size_t num_global_links; // Per switch
     
     public:
       

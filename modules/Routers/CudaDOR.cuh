@@ -5,9 +5,8 @@
 
 namespace route::cuda_detail {
 
-  // csr graph for gpu mem
   struct CSRDevice {
-    const uint32_t* row_offsets;]
+    const uint32_t* row_offsets;
     const uint32_t* col_indices;
     const uint8_t* node_alive;
     const uint8_t* edge_alive;
@@ -15,18 +14,16 @@ namespace route::cuda_detail {
     uint32_t num_nodes;
   };
 
-  // returns CSR index of next hop or UINT32_MAX when no more progress can be made
-  __device__ __forceinline__
-  uint32_t dor_next_hop(const CSRDevice& csr, uint32_t cur_idx, uint32_t dest_idx) {
-    uint64_t cur_node  = csr.index_to_node[cur_idx];
-    uint64_t dest_node = csr.index_to_node[dest_idx];
-    uint64_t diff = cur_node ^ dest_node;
+  // returns CSR index of next hop. uint32_max replacement for std::optional
+  __device__ __forceinline__ uint32_t dor_next_hop(const CSRDevice& csr, uint32_t cur_idx, uint32_t dst_idx) {
+    uint64_t cur_node = csr.index_to_node[cur_idx];
+    uint64_t dst_node = csr.index_to_node[dst_idx];
+    uint64_t diff = cur_node ^ dst_node;
 
     if (diff == 0) return cur_idx;
 
-    uint64_t remaining = diff;
-    while (remaining != 0) {
-      int bit = __ffsll(static_cast<long long>(remaining)) - 1; // index of lsb
+    while (diff != 0) {
+      int bit = __ffsll(static_cast<long long>(diff)) - 1; // index of lsb
       uint64_t candidate_node = cur_node ^ (1ULL << bit);
 
       uint32_t start = csr.row_offsets[cur_idx];
@@ -44,7 +41,7 @@ namespace route::cuda_detail {
         }
       }
 
-      remaining &= remaining - 1; // clear lowest set bit
+      diff &= diff - 1; // clear lowest set bit
     }
 
     return UINT32_MAX;

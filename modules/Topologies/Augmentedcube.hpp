@@ -28,8 +28,7 @@ namespace topo {
       template <typename F>
       void for_each_node_impl(F&& f) const {
         for(std::size_t i = 0; i < num_nodes; i++) {
-          BitMask x = static_cast<BitMask>(i);
-          f(x);
+          f(static_cast<BitMask>(i));
         }
       }
 
@@ -48,7 +47,7 @@ namespace topo {
 
         for (std::size_t j = 1; j < n; j++) {
 
-          // The Hypercube part of the augmented cube
+          // hypercube part of the augmented cube
           BitMask mask_norm = BitMask{1} << j;
           BitMask neighbour_norm = x ^ mask_norm;
           f(neighbour_norm);
