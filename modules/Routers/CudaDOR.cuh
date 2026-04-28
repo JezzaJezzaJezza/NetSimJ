@@ -14,7 +14,6 @@ namespace route::cuda_detail {
     uint32_t num_nodes;
   };
 
-  // returns CSR index of next hop. uint32_max replacement for std::optional
   __device__ __forceinline__ uint32_t dor_next_hop(const CSRDevice& csr, uint32_t cur_idx, uint32_t dst_idx) {
     uint64_t cur_node = csr.index_to_node[cur_idx];
     uint64_t dst_node = csr.index_to_node[dst_idx];
@@ -31,7 +30,7 @@ namespace route::cuda_detail {
 
       for (uint32_t e_i = start; e_i < end; e_i++) {
         if (!csr.edge_alive[e_i]) continue;
-        
+
         uint32_t v_idx = csr.col_indices[e_i];
 
         if (!csr.node_alive[v_idx]) continue;
@@ -41,7 +40,7 @@ namespace route::cuda_detail {
         }
       }
 
-      diff &= diff - 1; // clear lowest set bit
+      diff &= diff - 1;
     }
 
     return UINT32_MAX;

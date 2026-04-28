@@ -46,13 +46,10 @@ namespace topo {
         f(neighbour);
 
         for (std::size_t j = 1; j < n; j++) {
-
-          // hypercube part of the augmented cube
           BitMask mask_norm = BitMask{1} << j;
           BitMask neighbour_norm = x ^ mask_norm;
           f(neighbour_norm);
-          
-          // Now for the complement
+
           BitMask mask_comp = (BitMask{1} << (j + 1)) - 1;
           BitMask neighbour_comp = x ^ mask_comp;
           f(neighbour_comp);
@@ -77,17 +74,14 @@ namespace topo {
 
         std::size_t j = (i + 1) / 2;
 
-        // j needs to be [1..(n-1)]
         if (j >= n) {
           throw std::logic_error("Augmented Cube: Bad index mapping (neighbour_at_impl)");
         }
 
         if (i % 2 == 1) {
-          // odd i - hypercube like neighbour
           BitMask mask_norm = BitMask{1} << j;
           return x ^ mask_norm;
         } else {
-          // even i - complement hypercube like neighbour
           BitMask mask_comp = (BitMask{1} << (j + 1)) - 1;
           return x ^ mask_comp;
         }

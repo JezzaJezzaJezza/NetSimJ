@@ -13,8 +13,8 @@ namespace topo {
   private:
     const std::size_t k_field;
     const std::size_t n_sub;
-    const std::size_t v_dim;
-    const std::size_t num_nodes;
+    std::size_t v_dim;
+    std::size_t num_nodes;
 
     std::size_t subfield_m(BitMask x) const {
       std::size_t shift = k_field - n_sub;
@@ -33,27 +33,21 @@ namespace topo {
     using node_type = BitMask;
 
     explicit ReducedHypercube(std::size_t k, std::size_t n)
-      : k_field(k),
-        n_sub(n),
-        v_dim([&]{
-          if (n == 0) {
-            throw std::invalid_argument("ReducedHypercube: n must be > 0");
-          }
-          if (k < n) {
-            throw std::invalid_argument("ReducedHypercube: require k >= n");
-          }
-          if (n >= sizeof(BitMask) * 8) {
-            throw std::runtime_error("ReducedHypercube: n too large for BitMask");
-          }
-          std::size_t high = std::size_t{1} << n;
-          std::size_t v = k + high;
-          if (v > sizeof(BitMask) * 8) {
-            throw std::runtime_error("ReducedHypercube: dimension too large for BitMask");
-          }
-          return v;
-        }()),
-        num_nodes(node_count_impl())
-    {
+      : k_field(k), n_sub(n) {
+      if (n == 0) {
+        throw std::invalid_argument("ReducedHypercube: n must be > 0");
+      }
+      if (k < n) {
+        throw std::invalid_argument("ReducedHypercube: require k >= n");
+      }
+      if (n >= sizeof(BitMask) * 8) {
+        throw std::runtime_error("ReducedHypercube: n too large for BitMask");
+      }
+      v_dim = k + (std::size_t{1} << n);
+      if (v_dim > sizeof(BitMask) * 8) {
+        throw std::runtime_error("ReducedHypercube: dimension too large for BitMask");
+      }
+      num_nodes = node_count_impl();
       if (num_nodes == 0) {
         throw std::runtime_error("ReducedHypercube: node_count overflow");
       }
@@ -65,7 +59,7 @@ namespace topo {
 
     template <typename F>
     void for_each_node_impl(F&& f) const {
-      for (std::size_t i = 0; i < num_nodes; ++i) {
+      for (std::size_t i = 0; i < num_nodes; i++) {
         BitMask x = static_cast<BitMask>(i);
         f(x);
       }
@@ -73,7 +67,7 @@ namespace topo {
 
     template <typename F>
     void for_each_neighbour_impl(const BitMask& x, F&& f) const {
-      for (std::size_t d = 0; d < k_field; ++d) {
+      for (std::size_t d = 0; d < k_field; d++) {
         BitMask mask = BitMask{1} << d;
         BitMask nbr = x ^ mask;
         f(nbr);

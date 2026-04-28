@@ -57,8 +57,8 @@ namespace topo {
 
     template <typename F>
     void for_each_node_impl(F&& f) const {
-      for (std::size_t c = 0; c < num_cube; ++c) {
-        for (std::size_t i = 0; i < n; ++i) {
+      for (std::size_t c = 0; c < num_cube; c++) {
+        for (std::size_t i = 0; i < n; i++) {
           CCCNode x{
             static_cast<BitMask>(c),
             static_cast<std::uint32_t>(i)
@@ -95,10 +95,6 @@ namespace topo {
       return 3;
     }
 
-    // Deterministic ordering:
-    //  i = 0 -> cycle +1
-    //  i = 1 -> cycle -1
-    //  i = 2 -> cube edge
     CCCNode neighbour_at_impl(const CCCNode& x, std::size_t i) const {
       if (i >= 3) {
         throw std::out_of_range("CubeConnectedCycles: neighbour index out of range");
@@ -115,19 +111,16 @@ namespace topo {
         return y;
       }
 
-      // i == 2: cube edge
-      {
-        BitMask mask = BitMask{1} << x.pos;
-        y.coord = x.coord ^ mask;
-        return y;
-      }
+      BitMask mask = BitMask{1} << x.pos;
+      y.coord = x.coord ^ mask;
+      return y;
     }
 
     std::string node_to_string_impl(const CCCNode& x) const {
       std::string s;
       s.reserve(n + 8);
 
-      for (std::size_t i = 0; i < n; ++i) {
+      for (std::size_t i = 0; i < n; i++) {
         std::size_t bit = n - 1 - i;
         bool one = (x.coord >> bit) & 1ULL;
         s.push_back(one ? '1' : '0');

@@ -67,8 +67,8 @@ namespace topo {
 
       template <typename F>
       void for_each_node_impl(F&& f) const {
-        for (std::size_t g = 0; g < num_groups; ++g) {
-          for (std::size_t s = 0; s < num_switches; ++s) {
+        for (std::size_t g = 0; g < num_groups; g++) {
+          for (std::size_t s = 0; s < num_switches; s++) {
 
             {
               DragonTruple sw{
@@ -79,7 +79,7 @@ namespace topo {
               f(sw);
             }
 
-            for (std::size_t e = 0; e < num_endpoints; ++e) {
+            for (std::size_t e = 0; e < num_endpoints; e++) {
               DragonTruple ep{
                 static_cast<int>(g),
                 static_cast<int>(s),
@@ -93,9 +93,9 @@ namespace topo {
 
       template <typename F>
       void for_each_endpoint_impl(F&& f) const {
-        for (std::size_t g = 0; g < num_groups; ++g) {
-          for (std::size_t s = 0; s < num_switches; ++s) {
-            for (std::size_t e = 0; e < num_endpoints; ++e) {
+        for (std::size_t g = 0; g < num_groups; g++) {
+          for (std::size_t s = 0; s < num_switches; s++) {
+            for (std::size_t e = 0; e < num_endpoints; e++) {
               DragonTruple ep{
                 static_cast<int>(g),
                 static_cast<int>(s),
@@ -164,7 +164,6 @@ namespace topo {
       }
 
       DragonTruple neighbour_at_impl(const DragonTruple& x, std::size_t i) const {
-        // Endpoint case: only neighbour is its switch
         if (x.endpoint_id >= 0) {
           if (i != 0) {
             throw std::out_of_range("Endpoint has only one neighbour.");
@@ -172,7 +171,6 @@ namespace topo {
           return DragonTruple{ x.group_id, x.switch_id, -1 };
         }
 
-        // Switch case
         const std::size_t deg = degree_impl(x);
         if (i >= deg) {
           throw std::out_of_range("Neighbour index out of range");
@@ -180,7 +178,6 @@ namespace topo {
 
         std::size_t idx = i;
 
-        // 1) endpoints on this switch
         if (idx < num_endpoints) {
           return DragonTruple{
             x.group_id,
@@ -190,7 +187,6 @@ namespace topo {
         }
         idx -= num_endpoints;
 
-        // 2) other switches in same group
         if (idx < num_switches - 1) {
           std::size_t s = idx;
           if (s >= static_cast<std::size_t>(x.switch_id)) {
@@ -204,7 +200,6 @@ namespace topo {
         }
         idx -= (num_switches - 1);
 
-        // 3) global links
         if (idx >= num_global_links) {
           throw std::logic_error("Dragonfly::neighbour_at_impl: bad global index");
         }
@@ -218,15 +213,13 @@ namespace topo {
           -1
         };
       }
-      
+
       std::string node_to_string_impl(const DragonTruple& x) const {
         if (x.endpoint_id >= 0) {
-          // endpoint
           return "g" + std::to_string(x.group_id) +
                  "-s" + std::to_string(x.switch_id) +
                  "-e" + std::to_string(x.endpoint_id);
         } else {
-          // switch
           return "g" + std::to_string(x.group_id) +
                  "-s" + std::to_string(x.switch_id) +
                  "-SW";

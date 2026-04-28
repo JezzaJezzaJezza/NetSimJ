@@ -14,7 +14,7 @@ namespace topo {
     const std::size_t n;
     const std::size_t num_nodes;
 
-    static constexpr std::size_t MAX_BITS = 63; // for uint64_t
+    static constexpr std::size_t MAX_BITS = 63;
 
     static std::size_t pow2(std::size_t e) {
       if (e >= MAX_BITS) {
@@ -23,40 +23,29 @@ namespace topo {
       return std::size_t{1} << e;
     }
 
-    // parity of bits [0..k] (inclusive) of x
     static bool prefix_parity(BitMask x, std::size_t k) {
       bool p = false;
-      for (std::size_t i = 0; i <= k; ++i) {
+      for (std::size_t i = 0; i <= k; i++) {
         p ^= ((x >> i) & BitMask{1}) != 0;
       }
       return p;
     }
 
-    // Recursive neighbour along given "dimension" dim for a twisted cube
     BitMask neighbour_at_rec(BitMask x, std::size_t dim, std::size_t cur_n) const {
       if (cur_n == 1) {
-        // TQ1 is just K2: single bit
         if (dim != 0) {
           throw std::out_of_range("TwistedCube: dim out of range in TQ1");
         }
         return x ^ BitMask{1};
       }
 
-      if (cur_n < 1) {
-        throw std::logic_error("TwistedCube: invalid recursion dimension");
-      }
-
       if (dim >= cur_n) {
         throw std::out_of_range("TwistedCube: dim >= cur_n");
       }
 
-      if (cur_n == 2) {
-        throw std::logic_error("TwistedCube: reached cur_n == 2 in recursion");
-      }
-
       if (dim < cur_n - 2) {
-        BitMask low_mask = (BitMask{1} << (cur_n - 2)) - 1; // bits 0..cur_n-3
-        BitMask low  = x & low_mask;
+        BitMask low_mask = (BitMask{1} << (cur_n - 2)) - 1;
+        BitMask low = x & low_mask;
         BitMask high = x & ~low_mask;
 
         BitMask low_nb = neighbour_at_rec(low, dim, cur_n - 2);
@@ -93,7 +82,6 @@ namespace topo {
       if (n > MAX_BITS) {
         throw std::invalid_argument("TwistedCube: dimension too large for BitMask");
       }
-      // classical twisted cube is defined for odd n: 1,3,5,...
       if (n % 2 == 0) {
         throw std::invalid_argument("TwistedCube: n must be odd (1,3,5,...)");
       }
@@ -105,7 +93,7 @@ namespace topo {
 
     template <typename F>
     void for_each_node_impl(F&& f) const {
-      for (std::size_t i = 0; i < num_nodes; ++i) {
+      for (std::size_t i = 0; i < num_nodes; i++) {
         BitMask x = static_cast<BitMask>(i);
         f(x);
       }
@@ -118,7 +106,7 @@ namespace topo {
 
     template <typename F>
     void for_each_neighbour_impl(const BitMask& x, F&& f) const {
-      for (std::size_t dim = 0; dim < n; ++dim) {
+      for (std::size_t dim = 0; dim < n; dim++) {
         BitMask nb = neighbour_at_impl(x, dim);
         f(nb);
       }

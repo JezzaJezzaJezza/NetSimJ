@@ -36,7 +36,7 @@ namespace topo {
 
       const std::size_t q = q_n(dim);
 
-      for (std::size_t t = 1; t <= q; ++t) {
+      for (std::size_t t = 1; t <= q; t++) {
         std::size_t idx_u_2t_minus1 = 2 * t - 2;
         std::size_t idx_e_2t = 2 * t - 1;
         if (idx_e_2t >= dim - 1) break;
@@ -46,17 +46,16 @@ namespace topo {
         }
       }
 
-      // (sum_{t=3}^{n-1} u_t) * e_2
       unsigned parity = 0;
       if (dim >= 4) {
-        for (std::size_t t = 3; t <= dim - 1; ++t) {
+        for (std::size_t t = 3; t <= dim - 1; t++) {
           std::size_t idx = t - 1;
           parity ^= static_cast<unsigned>((u >> idx) & BitMask{1});
         }
       }
 
       if (parity & 1u) {
-        v ^= BitMask{1} << 1; // e_2 -> bit index 1
+        v ^= BitMask{1} << 1;
       }
 
       return v;
@@ -69,42 +68,36 @@ namespace topo {
 
       u_bits[dim] = 0;
 
-      for (std::size_t i = 3; i <= dim - 1; ++i) {
+      for (std::size_t i = 3; i <= dim - 1; i++) {
         bool v_i = ((v >> (i - 1)) & BitMask{1}) != 0;
 
         if (i % 2 == 1) {
           u_bits[i] = v_i ? 1u : 0u;
         } else {
           if (i <= 2 * q) {
-            // v_i = u_i XOR u_{i-1}
             unsigned u_im1 = u_bits[i - 1];
             u_bits[i] = static_cast<unsigned>(v_i ? 1u : 0u) ^ u_im1;
           } else {
-            // outside twisted range, unchanged
             u_bits[i] = v_i ? 1u : 0u;
           }
         }
       }
 
-      // parity over u_3..u_{n-1}
       unsigned parity = 0;
       if (dim >= 4) {
-        for (std::size_t i = 3; i <= dim - 1; ++i) {
+        for (std::size_t i = 3; i <= dim - 1; i++) {
           parity ^= u_bits[i];
         }
       }
 
-      // u_1 = v_1 (bit index 0, odd -> unchanged)
       bool v1 = (v & BitMask{1}) != 0;
       u_bits[1] = v1 ? 1u : 0u;
 
-      // v_2 = u_2 XOR u_1 XOR parity  =>  u_2 = v_2 XOR u_1 XOR parity
       bool v2 = ((v >> 1) & BitMask{1}) != 0;
       u_bits[2] = static_cast<unsigned>(v2 ? 1u : 0u) ^ u_bits[1] ^ (parity & 1u);
 
-      // build BitMask u (u_n = 0, so ignore bit dim-1)
       BitMask u = 0;
-      for (std::size_t i = 1; i <= dim - 1; ++i) {
+      for (std::size_t i = 1; i <= dim - 1; i++) {
         if (u_bits[i] & 1u) {
           u |= BitMask{1} << (i - 1);
         }
@@ -117,7 +110,6 @@ namespace topo {
         throw std::logic_error("TwistedCubeConnected: dim == 0");
       }
 
-      // Base: treat TN1, TN2 as plain hypercubes (K2, C4)
       if (dim <= 2) {
         if (dim_idx >= dim) {
           throw std::out_of_range("TwistedCubeConnected: dim_idx out of range (base)");
@@ -127,7 +119,6 @@ namespace topo {
       }
 
       if (dim_idx < dim - 1) {
-        // internal edge within TN_{dim-1}^0 or TN_{dim-1}^1
         BitMask msb = x & (BitMask{1} << (dim - 1));
         BitMask suffix = x & ~ (BitMask{1} << (dim - 1));
 
@@ -165,7 +156,7 @@ namespace topo {
 
     template <typename F>
     void for_each_node_impl(F&& f) const {
-      for (std::size_t i = 0; i < num_nodes; ++i) {
+      for (std::size_t i = 0; i < num_nodes; i++) {
         BitMask x = static_cast<BitMask>(i);
         f(x);
       }
@@ -178,7 +169,7 @@ namespace topo {
 
     template <typename F>
     void for_each_neighbour_impl(const BitMask& x, F&& f) const {
-      for (std::size_t dim_idx = 0; dim_idx < n; ++dim_idx) {
+      for (std::size_t dim_idx = 0; dim_idx < n; dim_idx++) {
         BitMask nb = neighbour_at_impl(x, dim_idx);
         f(nb);
       }

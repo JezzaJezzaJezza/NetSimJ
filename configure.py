@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# Note: FILE WAS CREATED WITH CHATGPT
 """Configure NetSimJ simulation parameters and generate src/SimConfig.hpp."""
 
 import os

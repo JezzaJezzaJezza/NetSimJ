@@ -37,20 +37,19 @@ namespace engines {
         f.failed = false;
       }
 
-      // partition flows across threads
       std::vector<std::vector<Event>> thread_results(num_threads);
       std::vector<std::jthread> threads;
       threads.reserve(num_threads);
 
-      std::size_t total  = flows.size();
-      std::size_t chunk  = total / num_threads;
+      std::size_t total = flows.size();
+      std::size_t chunk = total / num_threads;
       std::size_t remain = total % num_threads;
 
       std::size_t offset = 0;
       for (unsigned t = 0; t < num_threads; t++) {
         std::size_t count = chunk + (t < remain ? 1 : 0);
         std::size_t start = offset;
-        std::size_t end   = offset + count;
+        std::size_t end = offset + count;
         offset = end;
 
         threads.emplace_back([&topo, &router, &flows, &thread_results, t, start, end]() {
@@ -60,7 +59,7 @@ namespace engines {
             Event ev = flows[i];
 
             while (true) {
-              Node cur  = ev.src;
+              Node cur = ev.src;
               Node dest = ev.dest;
 
               if (cur == dest || ev.failed) {
@@ -85,10 +84,8 @@ namespace engines {
         });
       }
 
-      // jthreads join automatically on destruction
       threads.clear();
 
-      // merge results
       std::size_t total_finished = 0;
       for (auto& r : thread_results) total_finished += r.size();
       finished_.reserve(total_finished);

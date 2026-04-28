@@ -14,7 +14,7 @@ namespace topo {
   };
 
   inline bool operator==(const BHNode& x, const BHNode& y) {
-    for (std::size_t i = 0; i < BHNode::MAX_N; ++i) {
+    for (std::size_t i = 0; i < BHNode::MAX_N; i++) {
       if (x.a[i] != y.a[i]) return false;
     }
     return true;
@@ -31,14 +31,14 @@ namespace topo {
 
     static std::size_t pow4(std::size_t e) {
       std::size_t r = 1;
-      for (std::size_t i = 0; i < e; ++i) {
+      for (std::size_t i = 0; i < e; i++) {
         r *= 4;
       }
       return r;
     }
 
     void increment(BHNode& x) const {
-      for (std::size_t i = 0; i < n; ++i) {
+      for (std::size_t i = 0; i < n; i++) {
         std::uint8_t v = x.a[i];
         if (v < 3) {
           x.a[i] = static_cast<std::uint8_t>(v + 1);
@@ -71,7 +71,7 @@ namespace topo {
     template <typename F>
     void for_each_node_impl(F&& f) const {
       BHNode x{};
-      for (std::size_t i = 0; i < num_nodes; ++i) {
+      for (std::size_t i = 0; i < num_nodes; i++) {
         f(x);
         increment(x);
       }
@@ -79,9 +79,9 @@ namespace topo {
 
     template <typename F>
     void for_each_neighbour_impl(const BHNode& x, F&& f) const {
-      std::uint8_t a0  = x.a[0];
+      std::uint8_t a0 = x.a[0];
       std::uint8_t a0p = static_cast<std::uint8_t>((a0 + 1) % 4);
-      std::uint8_t a0m = static_cast<std::uint8_t>((a0 + 3) % 4); // -1 mod 4
+      std::uint8_t a0m = static_cast<std::uint8_t>((a0 + 3) % 4);
 
       {
         BHNode y = x;
@@ -96,8 +96,8 @@ namespace topo {
 
       std::uint8_t delta4 = (a0 % 2 == 0) ? 1u : 3u;
 
-      for (std::size_t i = 1; i < n; ++i) {
-        std::uint8_t ai     = x.a[i];
+      for (std::size_t i = 1; i < n; i++) {
+        std::uint8_t ai = x.a[i];
         std::uint8_t new_ai = static_cast<std::uint8_t>((ai + delta4) % 4);
 
         {
@@ -126,7 +126,7 @@ namespace topo {
         throw std::out_of_range("BalancedHypercube: neighbour index out of range");
       }
 
-      std::uint8_t a0  = x.a[0];
+      std::uint8_t a0 = x.a[0];
       std::uint8_t a0p = static_cast<std::uint8_t>((a0 + 1) % 4);
       std::uint8_t a0m = static_cast<std::uint8_t>((a0 + 3) % 4);
       std::uint8_t delta4 = (a0 % 2 == 0) ? 1u : 3u;
@@ -144,14 +144,14 @@ namespace topo {
 
       std::size_t idx = i - 2;
       std::size_t dim = 1 + (idx / 2);
-      bool use_plus   = (idx % 2 == 0);
+      bool use_plus = (idx % 2 == 0);
 
-      std::uint8_t ai     = x.a[dim];
+      std::uint8_t ai = x.a[dim];
       std::uint8_t new_ai = static_cast<std::uint8_t>((ai + delta4) % 4);
 
       BHNode y = x;
       y.a[dim] = new_ai;
-      y.a[0]   = use_plus ? a0p : a0m;
+      y.a[0] = use_plus ? a0p : a0m;
       return y;
     }
 

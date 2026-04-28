@@ -74,7 +74,6 @@ namespace topo {
 
     CSRHost<Topo> graph;
 
-    // index stuff
     NodeIndex<Node> index = build_node_index(topo);
     graph.nodes = index.size();
     graph.index_to_node = index.index_to_node;
@@ -82,9 +81,8 @@ namespace topo {
 
     graph.row_offsets.resize(graph.nodes + 1);
 
-    // compute row offsets
     std::size_t edge_count = 0;
-    for (std::size_t node_idx = 0; node_idx < graph.nodes; ++node_idx) {
+    for (std::size_t node_idx = 0; node_idx < graph.nodes; node_idx++) {
       const Node& u = index.index_to_node[node_idx];
       std::size_t deg = topo.degree_impl(u);
       graph.row_offsets[node_idx] = static_cast<std::uint32_t>(edge_count);
@@ -96,42 +94,36 @@ namespace topo {
     graph.edges = edge_count;
     graph.col_indices.resize(graph.edges);
 
-    // everything healthy by default
     graph.node_alive.assign(graph.nodes, 1);
     graph.edge_alive.assign(graph.edges, 1);
 
-    // fill adjacency
-    for (std::size_t node_idx = 0; node_idx < graph.nodes; ++node_idx) {
+    for (std::size_t node_idx = 0; node_idx < graph.nodes; node_idx++) {
       const Node& u = index.index_to_node[node_idx];
       std::size_t deg = topo.degree_impl(u);
       std::uint32_t start = graph.row_offsets[node_idx];
 
-      for (std::size_t i = 0; i < deg; ++i) {
+      for (std::size_t i = 0; i < deg; i++) {
         Node v = topo.neighbour_at_impl(u, i);
         std::size_t v_idx = index.index_of(v);
         graph.col_indices[start + i] = static_cast<std::uint32_t>(v_idx);
       }
     }
 
-    // mark endpoints
     graph.is_endpoint.assign(graph.nodes, 0);
     topo.for_each_endpoint_impl([&](const Node& u) {
       std::size_t idx_u = index.index_of(u);
       graph.is_endpoint[idx_u] = 1;
     });
 
-    // apply node faults independently
     std::bernoulli_distribution node_fault(node_fault_prob);
-    for (std::size_t i = 0; i < graph.nodes; ++i) {
+    for (std::size_t i = 0; i < graph.nodes; i++) {
       if (node_fault(rng)) {
         graph.node_alive[i] = 0;
       }
     }
 
-    // apply edge faults independently and directionally
-    // each CSR adjacency entry u->v is faulted on its own
     std::bernoulli_distribution edge_fault(edge_fault_prob);
-    for (std::size_t ei = 0; ei < graph.edges; ++ei) {
+    for (std::size_t ei = 0; ei < graph.edges; ei++) {
       if (edge_fault(rng)) {
         graph.edge_alive[ei] = 0;
       }
@@ -144,7 +136,6 @@ namespace topo {
   CSRHost<Topo> build_csr(const Topo& topo) {
     CSRHost<Topo> graph;
 
-    // index stuff
     NodeIndex<typename Topo::node_type> index = build_node_index(topo);
     graph.nodes = index.size();
     graph.index_to_node = index.index_to_node;
@@ -152,9 +143,8 @@ namespace topo {
 
     graph.row_offsets.resize(graph.nodes + 1);
 
-    // compute row offsets
     std::size_t edge_count = 0;
-    for (std::size_t node_idx = 0; node_idx < graph.nodes; ++node_idx) {
+    for (std::size_t node_idx = 0; node_idx < graph.nodes; node_idx++) {
       const auto& u = index.index_to_node[node_idx];
       std::size_t deg = topo.degree_impl(u);
       graph.row_offsets[node_idx] = static_cast<std::uint32_t>(edge_count);
@@ -169,12 +159,12 @@ namespace topo {
     graph.node_alive.assign(graph.nodes, 1);
     graph.edge_alive.assign(graph.edges, 1);
 
-    for (std::size_t node_idx = 0; node_idx < graph.nodes; ++node_idx) {
+    for (std::size_t node_idx = 0; node_idx < graph.nodes; node_idx++) {
       const auto& u = index.index_to_node[node_idx];
       std::size_t deg = topo.degree_impl(u);
       std::uint32_t start = graph.row_offsets[node_idx];
 
-      for (std::size_t i = 0; i < deg; ++i) {
+      for (std::size_t i = 0; i < deg; i++) {
         auto v = topo.neighbour_at_impl(u, i);
         std::size_t v_idx = index.index_of(v);
         graph.col_indices[start + i] = static_cast<std::uint32_t>(v_idx);

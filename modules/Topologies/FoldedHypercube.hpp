@@ -55,14 +55,12 @@ namespace topo {
 
     template <typename F>
     void for_each_neighbour_impl(const BitMask& x, F&& f) const {
-      // Hypercube neighbours: Hamming distance 1
       for (std::size_t i = 0; i < n; i++) {
         BitMask mask = BitMask{1} << i;
         BitMask neighbour = x ^ mask;
         f(neighbour);
       }
 
-      // Fold edge: connect to bitwise complement within n bits
       BitMask comp = (~x) & full_mask();
       f(comp);
     }

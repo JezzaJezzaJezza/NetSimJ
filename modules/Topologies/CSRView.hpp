@@ -24,7 +24,7 @@ namespace topo {
 
     template <typename F>
     void for_each_node_impl(F&& f) const {
-      for (std::size_t idx = 0; idx < graph_.nodes; ++idx) {
+      for (std::size_t idx = 0; idx < graph_.nodes; idx++) {
         if (!graph_.node_alive[idx]) continue;
         const Node& u = graph_.index_to_node[idx];
         f(u);
@@ -33,7 +33,7 @@ namespace topo {
 
     template <typename F>
     void for_each_endpoint_impl(F&& f) const {
-      for (std::size_t idx = 0; idx < graph_.nodes; ++idx) {
+      for (std::size_t idx = 0; idx < graph_.nodes; idx++) {
         if (!graph_.node_alive[idx]) continue;
         if (!graph_.is_endpoint[idx]) continue;
         const Node& u = graph_.index_to_node[idx];
@@ -41,7 +41,6 @@ namespace topo {
       }
     }
 
-    // Neighbours: map Node -> idx, walk adjacency, map back idx -> Node
     template <typename F>
     void for_each_neighbour_impl(const Node& u, F&& f) const {
       auto it = graph_.node_to_index.find(u);
@@ -54,7 +53,7 @@ namespace topo {
       auto start = graph_.row_offsets[u_idx];
       auto end = graph_.row_offsets[u_idx + 1];
 
-      for (std::uint32_t ei = start; ei < end; ++ei) {
+      for (std::uint32_t ei = start; ei < end; ei++) {
         if (!graph_.edge_alive[ei]) continue;
 
         std::size_t v_idx = graph_.col_indices[ei];
@@ -107,12 +106,10 @@ namespace topo {
       throw std::out_of_range("CSRView: neighbour index out of range");
     }
 
-    // printing: just forward to the base topo
     std::string node_to_string_impl(const Node& x) const {
       return base_.node_to_string(x);
     }
 
-    // optional accessors if you *really* need them later
     const CSRHost<Topo>& graph() const {return graph_;}
     const Topo& base() const {return base_;}
 

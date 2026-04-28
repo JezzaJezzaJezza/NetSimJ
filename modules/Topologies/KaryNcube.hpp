@@ -14,14 +14,14 @@ namespace topo {
 
   class KaryNcube : public BaseTopo<KaryNcube, KaryNode> {
   private:
-    const std::size_t k; // nodes per dimension
-    const std::size_t n; // number of dimensions
-    const std::size_t num_nodes; // k^n
-    std::size_t* stride; // length n, stride[d] = k^d
+    const std::size_t k;
+    const std::size_t n;
+    const std::size_t num_nodes;
+    std::size_t* stride;
 
     static std::size_t int_pow(std::size_t base, std::size_t exp) {
       std::size_t result = 1;
-      for (std::size_t i = 0; i < exp; ++i) {
+      for (std::size_t i = 0; i < exp; i++) {
         result *= base;
       }
       return result;
@@ -30,35 +30,30 @@ namespace topo {
     void init_strides() {
       stride = new std::size_t[n];
       std::size_t s = 1;
-      for (std::size_t d = 0; d < n; ++d) {
+      for (std::size_t d = 0; d < n; d++) {
         stride[d] = s;
         s *= k;
       }
     }
 
-    // coordinate of node x in dimension dim (0 .. k-1)
     std::size_t coord(KaryNode x, std::size_t dim) const {
       return (static_cast<std::size_t>(x) / stride[dim]) % k;
     }
 
-    // one step +1 in dimension dim (wrap-around)
     KaryNode step_forward(KaryNode x, std::size_t dim) const {
       std::size_t c = coord(x, dim);
       if (c + 1 < k) {
         return x + static_cast<KaryNode>(stride[dim]);
       } else {
-        // wrap: k-1 -> 0
         return x - static_cast<KaryNode>((k - 1) * stride[dim]);
       }
     }
 
-    // one step -1 in dimension dim (wrap-around)
     KaryNode step_backward(KaryNode x, std::size_t dim) const {
       std::size_t c = coord(x, dim);
       if (c > 0) {
         return x - static_cast<KaryNode>(stride[dim]);
       } else {
-        // wrap: 0 -> k-1
         return x + static_cast<KaryNode>((k - 1) * stride[dim]);
       }
     }
@@ -85,33 +80,30 @@ namespace topo {
       delete[] stride;
     }
 
-    // no copying; keeps the raw pointer life simple
     KaryNcube(const KaryNcube&) = delete;
     KaryNcube& operator=(const KaryNcube&) = delete;
 
-    // total nodes = k^n
     std::size_t node_count_impl() const {
       return num_nodes;
     }
 
     template <typename F>
     void for_each_node_impl(F&& f) const {
-      for (std::size_t i = 0; i < num_nodes; ++i) {
+      for (std::size_t i = 0; i < num_nodes; i++) {
         f(static_cast<KaryNode>(i));
       }
     }
 
     template <typename F>
     void for_each_endpoint_impl(F&& f) const {
-      for(std::size_t i = 0; i < num_nodes; i++) {
+      for (std::size_t i = 0; i < num_nodes; i++) {
         f(static_cast<KaryNode>(i));
       }
     }
 
-    // classic k-ary n-cube (torus): 2 neighbours per dimension (+1 and -1)
     template <typename F>
     void for_each_neighbour_impl(const KaryNode& x, F&& f) const {
-      for (std::size_t dim = 0; dim < n; ++dim) {
+      for (std::size_t dim = 0; dim < n; dim++) {
         f(step_forward(x, dim));
         f(step_backward(x, dim));
       }
@@ -135,7 +127,7 @@ namespace topo {
     std::string node_to_string_impl(KaryNode x) const {
       std::string s;
       s.push_back('(');
-      for (std::size_t dim = 0; dim < n; ++dim) {
+      for (std::size_t dim = 0; dim < n; dim++) {
         s += std::to_string(coord(x, dim));
         if (dim + 1 < n) {
           s.push_back(',');

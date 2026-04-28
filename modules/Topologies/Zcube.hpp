@@ -15,7 +15,6 @@ namespace topo {
     const std::size_t n;
     const std::size_t num_nodes;
 
-    // k(m) as in Zhu's definition
     static std::size_t kappa(std::size_t m) {
       if (m == 1) return 0;
       double md = static_cast<double>(m);
@@ -30,7 +29,7 @@ namespace topo {
 
       BitMask result = x;
 
-      for (std::size_t t = 0; t < k; ++t) {
+      for (std::size_t t = 0; t < k; t++) {
         std::size_t idx_top = m - 1 - t;
         std::size_t idx_bottom = k - 1 - t;
 
@@ -38,21 +37,18 @@ namespace topo {
         BitMask bottom_bit = (x >> idx_bottom) & BitMask{1};
         BitMask new_bit = top_bit ^ bottom_bit;
 
-        // clear and set top bit
         result &= ~(BitMask{1} << idx_top);
         result |= (new_bit << idx_top);
       }
       return result;
     }
 
-    BitMask neighbour_dim(BitMask x,
-                          std::size_t dim,
-                          std::size_t cur_n) const {
+    BitMask neighbour_dim(BitMask x, std::size_t dim, std::size_t cur_n) const {
       if (cur_n == 1) {
         if (dim != 0) {
           throw std::out_of_range("Zcube: bad dim for cur_n=1");
         }
-        return x ^ BitMask{1};  // K2
+        return x ^ BitMask{1};
       }
 
       const std::size_t msb_idx = cur_n - 1;
@@ -91,7 +87,7 @@ namespace topo {
 
     template <typename F>
     void for_each_node_impl(F&& f) const {
-      for (std::size_t i = 0; i < num_nodes; ++i) {
+      for (std::size_t i = 0; i < num_nodes; i++) {
         BitMask x = static_cast<BitMask>(i);
         f(x);
       }
@@ -104,7 +100,7 @@ namespace topo {
 
     template <typename F>
     void for_each_neighbour_impl(const BitMask& x, F&& f) const {
-      for (std::size_t dim = 0; dim < n; ++dim) {
+      for (std::size_t dim = 0; dim < n; dim++) {
         f(neighbour_at_impl(x, dim));
       }
     }

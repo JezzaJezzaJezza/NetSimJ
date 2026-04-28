@@ -32,7 +32,6 @@ namespace engines {
 
       auto flows = traffic_gen(topo);
 
-      // init flows
       for (auto& f : flows) {
         f.path.clear();
         f.path.push_back(f.src);
@@ -44,7 +43,7 @@ namespace engines {
         Event ev = eventQueue.top();
         eventQueue.pop();
 
-        Node cur  = ev.src;
+        Node cur = ev.src;
         Node dest = ev.dest;
 
         if (cur == dest || ev.failed) {

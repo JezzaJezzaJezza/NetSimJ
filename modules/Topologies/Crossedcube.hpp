@@ -14,9 +14,6 @@ namespace topo {
     const std::size_t n;
     const std::size_t num_nodes;
 
-    // Map a 2-bit pair (hi, lo) to its partner according to the standard
-    // "pair-related" relation:
-    //   (00,00), (10,10), (01,11), (11,01)
     static inline void pair_map(unsigned hi, unsigned lo,
                                 unsigned &out_hi, unsigned &out_lo) {
       unsigned p = (hi << 1) | lo;
@@ -25,28 +22,22 @@ namespace topo {
         case 0b10: out_hi = 1; out_lo = 0; break;
         case 0b01: out_hi = 1; out_lo = 1; break;
         case 0b11: out_hi = 0; out_lo = 1; break;
-        default:   out_hi = 0; out_lo = 0; break; // unreachable
+        default:   out_hi = 0; out_lo = 0; break;
       }
     }
 
-    // Given the low (cur_n-1) bits of a vertex in one half of CQ_cur_n,
-    // compute the low bits of the corresponding vertex in the other half
-    // for the cross edge (dimension cur_n-1).
     BitMask cross_map_low(BitMask s, std::size_t cur_n) const {
       const std::size_t low_bits = cur_n - 1;
       BitMask t = 0;
 
-      // If n is even, bit (n-2) is preserved across the cross edge.
       if ((cur_n & 1u) == 0) {
-        std::size_t idx = low_bits - 1;  // n-2
+        std::size_t idx = low_bits - 1;
         unsigned b = (s >> idx) & 1u;
         t |= (BitMask{b} << idx);
       }
 
-      // For 0 <= i < floor((n-1)/2):
-      // pairs (2i+1, 2i) are "pair-related"
       const std::size_t pair_bound = low_bits / 2;
-      for (std::size_t i = 0; i < pair_bound; ++i) {
+      for (std::size_t i = 0; i < pair_bound; i++) {
         std::size_t bit_lo = 2 * i;
         std::size_t bit_hi = 2 * i + 1;
 
@@ -63,12 +54,8 @@ namespace topo {
       return t;
     }
 
-    // Internal helper: neighbour of x in "dimension dim" of CQ_cur_n.
-    BitMask neighbour_dim(BitMask x,
-                          std::size_t dim,
-                          std::size_t cur_n) const {
+    BitMask neighbour_dim(BitMask x, std::size_t dim, std::size_t cur_n) const {
       if (cur_n == 1) {
-        // CQ1 is just K2
         if (dim != 0) {
           throw std::out_of_range("CrossedCube: bad dim in neighbour_dim");
         }
@@ -82,12 +69,10 @@ namespace topo {
       BitMask low = x & low_mask;
 
       if (dim == msb_idx) {
-        // Cross edge between the two halves CQ_{n-1}^0 and CQ_{n-1}^1
         BitMask mapped_low = cross_map_low(low, cur_n);
         unsigned other_prefix = 1u - prefix;
         return (BitMask{other_prefix} << msb_idx) | mapped_low;
       } else {
-        // Internal edge in CQ_{n-1}: recurse on the low bits
         BitMask low_nbr = neighbour_dim(low, dim, cur_n - 1);
         return (BitMask{prefix} << msb_idx) | low_nbr;
       }
@@ -113,7 +98,7 @@ namespace topo {
 
     template <typename F>
     void for_each_node_impl(F&& f) const {
-      for (std::size_t i = 0; i < num_nodes; ++i) {
+      for (std::size_t i = 0; i < num_nodes; i++) {
         f(static_cast<BitMask>(i));
       }
     }
@@ -125,7 +110,7 @@ namespace topo {
 
     template <typename F>
     void for_each_neighbour_impl(const BitMask& x, F&& f) const {
-      for (std::size_t dim = 0; dim < n; ++dim) {
+      for (std::size_t dim = 0; dim < n; dim++) {
         f(neighbour_at_impl(x, dim));
       }
     }
@@ -145,20 +130,15 @@ namespace topo {
       return n;
     }
 
-    // For your generic DOR: we keep the same notion of "dimension" as bit index.
-    // Aligned if bit 'dim' is equal in both nodes.
     bool dim_aligned(BitMask a, BitMask b, std::size_t dim) const {
       BitMask mask = BitMask{1} << dim;
       return ((a ^ b) & mask) == 0;
     }
 
-    // Move one hop in "dimension dim".
-    // If already aligned on that bit, do nothing.
-    // Otherwise, follow the actual crossed-cube edge in that dimension.
     BitMask move_to(BitMask from, BitMask to, std::size_t dim) const {
       BitMask mask = BitMask{1} << dim;
       if (((from ^ to) & mask) == 0) {
-        return from;     // already aligned on that bit
+        return from;
       }
       return neighbour_dim(from, dim, n);
     }

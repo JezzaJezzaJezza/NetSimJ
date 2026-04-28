@@ -13,9 +13,8 @@ namespace topo {
     private:
       const std::size_t n;
       const std::size_t num_nodes;
-      const bool one_type; // false = 0-Mn, true = 1-Mn
+      const bool one_type;
 
-      // Mask with the lowest n bits set to 1
       BitMask all_bits_mask() const {
         const std::size_t bits = sizeof(BitMask) * 8;
         if (n >= bits) {
@@ -24,27 +23,22 @@ namespace topo {
         return (BitMask{1} << n) - 1;
       }
 
-      // Single neighbour along "dimension" dim (0-based)
       BitMask mobius_neighbor(BitMask x, std::size_t dim) const {
         if (dim >= n) {
           throw std::out_of_range("Mcube: dim out of range");
         }
 
-        // previous "bit" (x_{dim}) in 1-based notation
         unsigned prev_bit;
         if (dim == 0) {
-          // x0 = 0 for 0-Mn, x0 = 1 for 1-Mn
           prev_bit = one_type ? 1u : 0u;
         } else {
           prev_bit = static_cast<unsigned>((x >> (dim - 1)) & BitMask{1});
         }
 
         if (prev_bit == 0u) {
-          // Hypercube-like edge: flip just bit 'dim'
           BitMask mask = BitMask{1} << dim;
           return x ^ mask;
         } else {
-          // Möbius edge: flip bits from 'dim' up to n-1
           BitMask upper = all_bits_mask() & (~BitMask{0} << dim);
           return x ^ upper;
         }
@@ -84,7 +78,7 @@ namespace topo {
 
       template <typename F>
       void for_each_neighbour_impl(const BitMask& x, F&& f) const {
-        for (std::size_t dim = 0; dim < n; ++dim) {
+        for (std::size_t dim = 0; dim < n; dim++) {
           BitMask nb = mobius_neighbor(x, dim);
           f(nb);
         }
