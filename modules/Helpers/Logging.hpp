@@ -92,10 +92,8 @@ namespace helper {
   }
 
   template <typename Node>
-  void write_metrics(const SimMetrics<Node>& m,
-                     const std::string& config_summary,
-                     const std::string& filename = "results.out") {
-    std::ofstream out(filename);
+  void write_metrics(const SimMetrics<Node>& m, const std::string& config_summary) {
+    std::ofstream out("results.out");
 
     out << "=== NetSimJ Simulation Results ===\n\n";
     out << config_summary << "\n\n";
@@ -142,11 +140,11 @@ namespace helper {
   }
 
   template <typename Topo>
-  void write_utilization(const std::vector<BasicEvents<typename Topo::node_type>>& flows,
-                         const Topo& topo,
-                         const std::string& filename = "results.out") {
+  void write_util(const std::vector<BasicEvents<typename Topo::node_type>>& flows, const Topo& topo) {
     using Node = typename Topo::node_type;
 
+    const std::string& filename = "results.out";
+    
     std::map<std::string, std::size_t> transit_counts;
 
     topo.for_each_node([&](const Node& n) {
@@ -213,8 +211,7 @@ namespace helper {
                    ? static_cast<double>(max_transit) / avg_transit
                    : 0.0;
       out << "Max transits     : " << max_transit << "\n";
-      out << "Max/Avg ratio    : " << ratio
-          << (ratio > 2.0 ? "  (high, potential bottleneck)" : "") << "\n";
+      out << "Max/Avg ratio    : " << ratio;
     }
 
     std::size_t top_n = std::min<std::size_t>(10, ranked.size());

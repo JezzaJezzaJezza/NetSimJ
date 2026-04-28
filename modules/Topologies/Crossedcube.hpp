@@ -81,9 +81,7 @@ namespace topo {
   public:
     using node_type = BitMask;
 
-    explicit CrossedCube(std::size_t dim)
-      : n(dim),
-        num_nodes(node_count_impl()) {
+    explicit CrossedCube(std::size_t dim) : n(dim), num_nodes(node_count_impl()) {
       if (n == 0) {
         throw std::runtime_error("CrossedCube: dimension must be > 0");
       }

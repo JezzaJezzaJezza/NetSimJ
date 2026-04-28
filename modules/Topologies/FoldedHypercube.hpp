@@ -25,9 +25,7 @@ namespace topo {
   public:
     using node_type = BitMask;
       
-    explicit FoldedHypercube(std::size_t dim)
-      : n(dim),
-        num_nodes(node_count_impl()) {
+    explicit FoldedHypercube(std::size_t dim) : n(dim), num_nodes(node_count_impl()) {
       if (n == 0) {
         throw std::runtime_error("FoldedHypercube requires dimension > 0");
       }

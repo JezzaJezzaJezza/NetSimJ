@@ -52,10 +52,7 @@ namespace topo {
   public:
     using node_type = BHNode;
 
-    explicit BalancedHypercube(std::size_t dim)
-      : n(dim),
-        num_nodes(pow4(dim)) {
-
+    explicit BalancedHypercube(std::size_t dim) : n(dim), num_nodes(pow4(dim)) {
       if (n == 0) {
         throw std::invalid_argument("BalancedHypercube: dimension must be > 0");
       }

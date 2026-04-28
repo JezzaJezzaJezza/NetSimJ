@@ -1,4 +1,3 @@
-#include <iostream>
 #include <print>
 
 #include "SimConfig.hpp"
@@ -29,7 +28,7 @@ int main() {
 
   auto metrics = helper::collect_metrics(engine.finished_flows());
   helper::write_metrics(metrics, sim::config_summary);
-  helper::write_utilization(engine.finished_flows(), csr_topo);
+  helper::write_util(engine.finished_flows(), csr_topo);
 #endif
 
   std::println("Simulation complete — wrote results.out");

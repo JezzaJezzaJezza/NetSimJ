@@ -101,7 +101,8 @@ namespace engines {
 
       threads.clear();
 
-      helper::SimMetrics<Node> m;
+      metrics_ = helper::SimMetrics<Node>{};
+      auto& m = metrics_;
 
       std::size_t total_success = 0;
       double total_sum_hops = 0.0;
@@ -143,8 +144,6 @@ namespace engines {
 
         m.hop_distribution = std::move(global_hist);
       }
-
-      metrics_ = std::move(m);
     }
 
     const helper::SimMetrics<Node>& metrics() const { return metrics_; }
@@ -152,8 +151,8 @@ namespace engines {
   private:
     helper::SimMetrics<Node> metrics_;
 
-    static double median_from_hist(const std::map<std::size_t, std::size_t>& hist,
-                                   std::size_t total) {
+    static double median_from_hist(const std::map<std::size_t, std::size_t>& hist, std::size_t total) {
+      
       auto value_at_rank = [&](std::size_t rank) -> std::size_t {
         std::size_t cumulative = 0;
         for (auto& [val, count] : hist) {

@@ -1,7 +1,6 @@
 #include <functional>
 #include <cstddef>
 #include <stdexcept>
-#include <ostream>
 #include "Base.hpp"
 
 namespace topo {
@@ -23,12 +22,6 @@ namespace topo {
     return !(a == b);
   }
 
-  inline std::ostream& operator<<(std::ostream& os, const DragonTruple& out) {
-    return os << "[g=" << out.group_id
-              << ", s=" << out.switch_id
-              << ", e=" << out.endpoint_id << "]";
-  }
-
   class Dragonfly : public BaseTopo<Dragonfly, DragonTruple> {
     // Classical Dally/Kim style
     private:
@@ -41,13 +34,8 @@ namespace topo {
       
       using node_type = DragonTruple;
       
-      explicit Dragonfly(std::size_t groups,
-                         std::size_t switches_per_group,
-                         std::size_t endpoints_per_switch)
-      : num_endpoints(endpoints_per_switch),
-        num_switches(switches_per_group),
-        num_groups(groups),
-        num_global_links(_get_global_links()) {
+      explicit Dragonfly(std::size_t groups, std::size_t switches_per_group, std::size_t endpoints_per_switch)
+        : num_endpoints(endpoints_per_switch), num_switches(switches_per_group), num_groups(groups), num_global_links(_get_global_links()) {
         if(num_groups == 0 || num_switches == 0 || num_endpoints == 0) {
           throw std::invalid_argument("Dragonfly requires groups, switches and endpoints to be > 0.");
         }
@@ -240,15 +228,10 @@ namespace std {
   template<>
   struct hash<topo::DragonTruple> {
     size_t operator()(const topo::DragonTruple& x) const noexcept {
-      size_t h = 0;
-      auto mix = [](size_t h, size_t v) {
-        h ^= v + 0x9e3779b97f4a7c15ULL + (h << 6) + (h >> 2);
-        return h;
-      };
-      h = mix(h, std::hash<int>{}(x.group_id));
-      h = mix(h, std::hash<int>{}(x.switch_id));
-      h = mix(h, std::hash<int>{}(x.endpoint_id));
-      return h;
+      size_t h1 = std::hash<int>{}(x.group_id);
+      size_t h2 = std::hash<int>{}(x.switch_id);
+      size_t h3 = std::hash<int>{}(x.endpoint_id);
+      return h1 ^ (h2 << 1) ^ (h3 << 2);
     }
   };
 }

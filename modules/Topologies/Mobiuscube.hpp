@@ -47,10 +47,7 @@ namespace topo {
     public:
       using node_type = BitMask;
 
-      explicit Mobiuscube(std::size_t dim, bool one = false)
-        : n(dim),
-          num_nodes(node_count_impl()),
-          one_type(one) {
+      explicit Mobiuscube(std::size_t dim, bool one = false) : n(dim), num_nodes(node_count_impl()), one_type(one) {
         if (n == 0) {
           throw std::invalid_argument("Mcube: dimension must be > 0");
         }

@@ -41,11 +41,7 @@ namespace topo {
   public:
     using node_type = CCCNode;
 
-    explicit CubeConnectedCycles(std::size_t dim)
-      : n(dim),
-        num_cube(pow2(dim)),
-        num_nodes(num_cube * dim) {
-
+    explicit CubeConnectedCycles(std::size_t dim) : n(dim), num_cube(pow2(dim)), num_nodes(num_cube * dim) {
       if (n < 2) {
         throw std::invalid_argument("CubeConnectedCycles: dimension must be >= 2");
       }
@@ -145,7 +141,7 @@ namespace std {
     std::size_t operator()(const topo::CCCNode& x) const noexcept {
       std::size_t h1 = std::hash<topo::BitMask>{}(x.coord);
       std::size_t h2 = std::hash<std::uint32_t>{}(x.pos);
-      return h1 ^ (h2 + 0x9e3779b97f4a7c15ULL + (h1 << 6) + (h1 >> 2));
+      return h1 ^ (h2 << 1);
     }
   };
 }

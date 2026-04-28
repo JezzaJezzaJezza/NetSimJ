@@ -70,9 +70,7 @@ namespace topo {
   public:
     using node_type = BitMask;
       
-    explicit Zcube(std::size_t dim)
-      : n(dim),
-        num_nodes(node_count_impl()) {
+    explicit Zcube(std::size_t dim) : n(dim), num_nodes(node_count_impl()) {
       if (n == 0) {
         throw std::runtime_error("Zcube requires dimension > 0");
       }

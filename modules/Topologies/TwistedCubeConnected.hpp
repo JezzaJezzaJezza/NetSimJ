@@ -141,10 +141,7 @@ namespace topo {
   public:
     using node_type = BitMask;
 
-    explicit TwistedCubeConnected(std::size_t dim)
-      : n(dim),
-        num_nodes(static_cast<std::size_t>(pow2(dim))) {
-
+    explicit TwistedCubeConnected(std::size_t dim) : n(dim), num_nodes(static_cast<std::size_t>(pow2(dim))) {
       if (n == 0) {
         throw std::invalid_argument("TwistedCubeConnected: dimension must be > 0");
       }
