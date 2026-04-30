@@ -15,7 +15,7 @@ namespace topo {
       const std::size_t num_nodes;
       const BitMask mask_n;
 
-      BitMask mobius_neighbor(BitMask x, std::size_t dim) const {
+      BitMask mobius_neighbour(BitMask x, std::size_t dim) const {
         if (dim >= n) {
           throw std::out_of_range("Mcube: dim out of range");
         }
@@ -58,7 +58,7 @@ namespace topo {
       template <typename F>
       void for_each_neighbour_impl(const BitMask& x, F&& f) const {
         for (std::size_t dim = 0; dim < n; dim++) {
-          f(mobius_neighbor(x, dim));
+          f(mobius_neighbour(x, dim));
         }
       }
 
@@ -70,7 +70,7 @@ namespace topo {
         if (i >= n) {
           throw std::out_of_range("Mcube: neighbour index out of range");
         }
-        return mobius_neighbor(x, i);
+        return mobius_neighbour(x, i);
       }
 
       std::size_t dim_count() const {
@@ -89,7 +89,7 @@ namespace topo {
         if (dim >= n) {
           throw std::out_of_range("Mcube: move_to dim out of range");
         }
-        return mobius_neighbor(from, dim);
+        return mobius_neighbour(from, dim);
       }
 
       std::string node_to_string_impl(BitMask x) const {
