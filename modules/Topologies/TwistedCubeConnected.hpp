@@ -18,11 +18,11 @@ namespace topo {
 
     static constexpr std::size_t MAX_BITS = sizeof(BitMask) * 8;
 
-    static BitMask pow2(std::size_t e) {
-      if (e >= MAX_BITS) {
+    static BitMask pow2(std::size_t n) {
+      if (n >= MAX_BITS) {
         throw std::runtime_error("TwistedCubeConnected: dimension too large for BitMask");
       }
-      return BitMask{1} << e;
+      return BitMask{1} << n;
     }
 
     static std::size_t q_n(std::size_t dim) {

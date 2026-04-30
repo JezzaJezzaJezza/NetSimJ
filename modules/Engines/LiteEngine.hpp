@@ -63,12 +63,12 @@ namespace engines {
           [&topo, &router, &endpoints, &accums, n, hop_limit, t, start, end]() {
             auto& acc = accums[t];
 
-            for (std::size_t si = start; si < end; si++) {
-              const Node& src = endpoints[si];
+            for (std::size_t src_idx = start; src_idx < end; src_idx++) {
+              const Node& src = endpoints[src_idx];
 
-              for (std::size_t di = 0; di < n; di++) {
-                if (si == di) continue;
-                const Node& dest = endpoints[di];
+              for (std::size_t dest_idx = 0; dest_idx < n; dest_idx++) {
+                if (src_idx == dest_idx) continue;
+                const Node& dest = endpoints[dest_idx];
 
                 Node cur = src;
                 std::size_t hops = 0;

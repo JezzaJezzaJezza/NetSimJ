@@ -13,41 +13,23 @@ namespace topo {
     private:
       const std::size_t n;
       const std::size_t num_nodes;
-      const bool one_type;
-
-      BitMask all_bits_mask() const {
-        const std::size_t bits = sizeof(BitMask) * 8;
-        if (n >= bits) {
-          return ~BitMask{0};
-        }
-        return (BitMask{1} << n) - 1;
-      }
+      const BitMask mask_n;
 
       BitMask mobius_neighbor(BitMask x, std::size_t dim) const {
         if (dim >= n) {
           throw std::out_of_range("Mcube: dim out of range");
         }
 
-        unsigned prev_bit;
-        if (dim == 0) {
-          prev_bit = one_type ? 1u : 0u;
-        } else {
-          prev_bit = static_cast<unsigned>((x >> (dim - 1)) & BitMask{1});
-        }
-
-        if (prev_bit == 0u) {
-          BitMask mask = BitMask{1} << dim;
-          return x ^ mask;
-        } else {
-          BitMask upper = all_bits_mask() & (~BitMask{0} << dim);
-          return x ^ upper;
-        }
+        bool prev_bit = (dim == 0) ? true : ((x >> (dim - 1)) & 1);
+        BitMask flip = prev_bit ? (mask_n & (~BitMask{0} << dim))
+                                : (BitMask{1} << dim);
+        return x ^ flip;
       }
 
     public:
       using node_type = BitMask;
 
-      explicit Mobiuscube(std::size_t dim, bool one = false) : n(dim), num_nodes(node_count_impl()), one_type(one) {
+      explicit Mobiuscube(std::size_t dim) : n(dim), num_nodes(node_count_impl()), mask_n(n >= sizeof(BitMask) * 8 ? ~BitMask{0} : (BitMask{1} << n) - 1) {
         if (n == 0) {
           throw std::invalid_argument("Mcube: dimension must be > 0");
         }
@@ -76,8 +58,7 @@ namespace topo {
       template <typename F>
       void for_each_neighbour_impl(const BitMask& x, F&& f) const {
         for (std::size_t dim = 0; dim < n; dim++) {
-          BitMask nb = mobius_neighbor(x, dim);
-          f(nb);
+          f(mobius_neighbor(x, dim));
         }
       }
 

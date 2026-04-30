@@ -24,18 +24,17 @@ namespace topo {
     return !(a == b);
   }
 
-  class CubeConnectedCycles
-    : public BaseTopo<CubeConnectedCycles, CCCNode> {
+  class CubeConnectedCycles : public BaseTopo<CubeConnectedCycles, CCCNode> {
   private:
     const std::size_t n;
     const std::size_t num_cube;
     const std::size_t num_nodes;
 
-    static std::size_t pow2(std::size_t e) {
-      if (e >= sizeof(BitMask) * 8) {
+    static std::size_t pow2(std::size_t n) {
+      if (n >= sizeof(BitMask) * 8) {
         throw std::runtime_error("CubeConnectedCycles: dim too large for BitMask");
       }
-      return std::size_t{1} << e;
+      return std::size_t{1} << n;
     }
 
   public:

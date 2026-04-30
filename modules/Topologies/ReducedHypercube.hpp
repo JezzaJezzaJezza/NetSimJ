@@ -32,8 +32,7 @@ namespace topo {
   public:
     using node_type = BitMask;
 
-    explicit ReducedHypercube(std::size_t k, std::size_t n)
-      : k_field(k), n_sub(n) {
+    explicit ReducedHypercube(std::size_t k, std::size_t n) : k_field(k), n_sub(n) {
       if (n == 0) {
         throw std::invalid_argument("ReducedHypercube: n must be > 0");
       }
@@ -60,8 +59,7 @@ namespace topo {
     template <typename F>
     void for_each_node_impl(F&& f) const {
       for (std::size_t i = 0; i < num_nodes; i++) {
-        BitMask x = static_cast<BitMask>(i);
-        f(x);
+        f(static_cast<BitMask>(i));
       }
     }
 
@@ -69,11 +67,9 @@ namespace topo {
     void for_each_neighbour_impl(const BitMask& x, F&& f) const {
       for (std::size_t d = 0; d < k_field; d++) {
         BitMask mask = BitMask{1} << d;
-        BitMask nbr = x ^ mask;
-        f(nbr);
+        f(x ^ mask);
       }
-      BitMask cross = cross_neighbour(x);
-      f(cross);
+      f(cross_neighbour(x));
     }
 
     std::size_t degree_impl(const BitMask&) const {

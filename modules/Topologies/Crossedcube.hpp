@@ -14,15 +14,29 @@ namespace topo {
     const std::size_t n;
     const std::size_t num_nodes;
 
-    static inline void pair_map(unsigned hi, unsigned lo,
-                                unsigned &out_hi, unsigned &out_lo) {
+    static inline void pair_map(unsigned hi, unsigned lo, unsigned &out_hi, unsigned &out_lo) {
       unsigned p = (hi << 1) | lo;
       switch (p) {
-        case 0b00: out_hi = 0; out_lo = 0; break;
-        case 0b10: out_hi = 1; out_lo = 0; break;
-        case 0b01: out_hi = 1; out_lo = 1; break;
-        case 0b11: out_hi = 0; out_lo = 1; break;
-        default:   out_hi = 0; out_lo = 0; break;
+        case 0b00:
+          out_hi = 0;
+          out_lo = 0;
+          break;
+        case 0b10:
+          out_hi = 1;
+          out_lo = 0;
+          break;
+        case 0b01:
+          out_hi = 1;
+          out_lo = 1;
+          break;
+        case 0b11:
+          out_hi = 0;
+          out_lo = 1;
+          break;
+        default:
+          out_hi = 0;
+          out_lo = 0;
+          break;
       }
     }
 
@@ -63,18 +77,15 @@ namespace topo {
       }
 
       const std::size_t msb_idx = cur_n - 1;
-      const BitMask low_mask = (BitMask{1} << msb_idx) - 1;
 
       unsigned prefix = (x >> msb_idx) & 1u;
-      BitMask low = x & low_mask;
+      BitMask low = x & (BitMask{1} << msb_idx) - 1;
 
       if (dim == msb_idx) {
-        BitMask mapped_low = cross_map_low(low, cur_n);
         unsigned other_prefix = 1u - prefix;
-        return (BitMask{other_prefix} << msb_idx) | mapped_low;
+        return (BitMask{other_prefix} << msb_idx) | cross_map_low(low, cur_n);
       } else {
-        BitMask low_nbr = neighbour_dim(low, dim, cur_n - 1);
-        return (BitMask{prefix} << msb_idx) | low_nbr;
+        return (BitMask{prefix} << msb_idx) | neighbour_dim(low, dim, cur_n - 1);
       }
     }
 

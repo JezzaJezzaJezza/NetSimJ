@@ -16,11 +16,11 @@ namespace topo {
 
     static constexpr std::size_t MAX_BITS = 63;
 
-    static std::size_t pow2(std::size_t e) {
-      if (e >= MAX_BITS) {
+    static std::size_t pow2(std::size_t n) {
+      if (n >= MAX_BITS) {
         throw std::runtime_error("TwistedCube: dimension too large for BitMask");
       }
-      return std::size_t{1} << e;
+      return std::size_t{1} << n;
     }
 
     static bool prefix_parity(BitMask x, std::size_t k) {

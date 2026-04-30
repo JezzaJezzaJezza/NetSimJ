@@ -79,37 +79,25 @@ namespace topo {
       std::uint8_t a0 = x.a[0];
       std::uint8_t a0p = static_cast<std::uint8_t>((a0 + 1) % 4);
       std::uint8_t a0m = static_cast<std::uint8_t>((a0 + 3) % 4);
-
-      {
-        BHNode y = x;
-        y.a[0] = a0p;
-        f(y);
-      }
-      {
-        BHNode y = x;
-        y.a[0] = a0m;
-        f(y);
-      }
-
       std::uint8_t delta4 = (a0 % 2 == 0) ? 1u : 3u;
 
+      BHNode y = x;
+      y.a[0] = a0p;
+      f(y);
+      y = x;
+      y.a[0] = a0m;
+      f(y);
+
       for (std::size_t i = 1; i < n; i++) {
-        std::uint8_t ai = x.a[i];
-        std::uint8_t new_ai = static_cast<std::uint8_t>((ai + delta4) % 4);
-
-        {
-          BHNode y = x;
-          y.a[i] = new_ai;
-          y.a[0] = a0p;
-          f(y);
-        }
-
-        {
-          BHNode y = x;
-          y.a[i] = new_ai;
-          y.a[0] = a0m;
-          f(y);
-        }
+        std::uint8_t new_ai = static_cast<std::uint8_t>((x.a[i] + delta4) % 4);
+        y = x;
+        y.a[i] = new_ai;
+        y.a[0] = a0p;
+        f(y);
+        y = x;
+        y.a[i] = new_ai;
+        y.a[0] = a0m;
+        f(y);
       }
     }
 

@@ -41,8 +41,7 @@ namespace topo {
     template <typename F>
     void for_each_node_impl(F&& f) const {
       for (std::size_t i = 0; i < num_nodes; i++) {
-        BitMask x = static_cast<BitMask>(i);
-        f(x);
+        f(static_cast<BitMask>(i));
       }
     }
 

@@ -62,11 +62,8 @@ namespace topo {
     using node_type = KaryNode;
 
     explicit KaryNcube(std::size_t k_ary, std::size_t dims)
-      : k(k_ary),
-        n(dims),
-        num_nodes(int_pow(k_ary, dims)),
-        stride(nullptr)
-    {
+      : k(k_ary), n(dims), num_nodes(int_pow(k_ary, dims)), stride(nullptr) {
+        
       if (k < 2) {
         throw std::invalid_argument("KaryNcube: k must be >= 2");
       }

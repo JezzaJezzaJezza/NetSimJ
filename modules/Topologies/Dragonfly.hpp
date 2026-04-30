@@ -13,8 +13,8 @@ namespace topo {
 
   // Op overloads allowing engine comparison
   inline bool operator==(const DragonTruple& a, const DragonTruple& b) {
-    return a.group_id    == b.group_id &&
-       a.switch_id   == b.switch_id &&
+    return a.group_id == b.group_id &&
+       a.switch_id == b.switch_id &&
        a.endpoint_id == b.endpoint_id;
   }
 
@@ -35,18 +35,13 @@ namespace topo {
       using node_type = DragonTruple;
       
       explicit Dragonfly(std::size_t groups, std::size_t switches_per_group, std::size_t endpoints_per_switch)
-        : num_endpoints(endpoints_per_switch), num_switches(switches_per_group), num_groups(groups), num_global_links(_get_global_links()) {
+        : num_endpoints(endpoints_per_switch), num_switches(switches_per_group), num_groups(groups), num_global_links((groups - 1) / switches_per_group) {
         if(num_groups == 0 || num_switches == 0 || num_endpoints == 0) {
           throw std::invalid_argument("Dragonfly requires groups, switches and endpoints to be > 0.");
         }
         if((num_groups - 1) % num_switches != 0) {
           throw std::invalid_argument("Dragonfly must satisfy the following: \n [number of global links per switch] = ([number of groups] - 1) / [number of switches per group] \nWhere the number of global links per switch must be a whole number");
         }
-      }
-
-      // Using canonical definition of dragonfly
-      std::size_t _get_global_links() const {
-        return ((num_groups - 1) / num_switches);
       }
 
       std::size_t node_count_impl() const {
