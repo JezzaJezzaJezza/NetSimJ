@@ -60,5 +60,4 @@ docs/.doctrees/
 __pycache__/
 *.py[cod]
 *.md
-/graphs
 SimConfig.hpp
